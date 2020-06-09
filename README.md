@@ -30,8 +30,8 @@ SuperDendrix requires the following data:
 #### Downloading required data
 CERES datasets of project DepMap from the Broad Institute for example analysis can be downloaded using the following command:
 
-    ${SUPERDENDRIX_HOME}/data/snakemake all
-SUPERDENDRIX_HOME is the home directory for this repository.
+    snakemake all
+in the data directory.
 
 ### Commands
 To run SuperDendrix on on the CERES dataset, use the following commands:

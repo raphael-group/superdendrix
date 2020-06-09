@@ -10,7 +10,7 @@ PROFILES_DIR = 'profiles'
 
 # URLs
 CCLE_MAF_URL = 'https://depmap.org/portal/download/api/download/external?file_name=ccle%2Fdepmap-mutation-calls-9a1a.9%2Fdepmap_19Q1_mutation_calls_v2.csv'
-CERES_SCORES_URL = 'https://ndownloader.figshare.com/files/14221388'
+CERES_SCORES_URL = 'https://www.dropbox.com/s/b5ryrwvini6w53e/Q1_gene_effect.tsv?dl=0'
 CELL_LINE_INFO_URL = 'https://www.dropbox.com/s/v74844gn91l8vrr/Q1_CERES_celllines.csv?dl=0'
 ONCOKB_ANNOTATION_URL = 'https://www.dropbox.com/s/g659hxrpsbwvcog/oncoKB_list.tsv?dl=0'
 

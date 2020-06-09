@@ -4,20 +4,23 @@ library(readr)
 library(stringr)
 library(tidyr)
 
+rawdir = "../data/raw/"
+featuredir = "../data/features/"
+profiledir = "../data/profiles"
 
 # load oncoKB
-oncokb <- read_delim("../data/oncoKB_list.tsv", 
+oncokb <- read_delim(paste(rawdir,"oncoKB_list.tsv",sep=""), 
                                    "\t", escape_double = FALSE, trim_ws = TRUE)
 oncogenes <- oncokb[oncokb$type == "oncogene",]$Gene
 tsg <- oncokb[oncokb$type == "tsg",]$Gene
 
 # load CCLE maf
-ccle <- read_delim("../data/depmap_19Q1_mutation_calls_v2.csv", 
+ccle <- read_delim(paste(rawdir,"depmap_19Q1_mutation_calls_v2.csv",sep=""), 
                    ",", escape_double = FALSE, trim_ws = TRUE)
 ccle$X1 <- NULL
 
 # load CERES cell lines
-sample_info <- read_csv("../data/Q1_CERES_celllines.csv")
+sample_info <- read_csv(paste(rawdir,"Q1_CERES_celllines.csv",sep=""))
 
 # restrict to cell lines with CERES scores
 ccle <- ccle %>% filter(DepMap_ID %in% sample_info$DepMap_ID)
@@ -114,6 +117,11 @@ parse_maf <- function(input_df, outdir, metadata, cancertypes,sample_data){
   agg <- aggregate(Tumor_Sample_Barcode ~ Alteration, data = df,paste, collapse = ",")
   agg$numCelllines <- with(agg,str_count(agg$Tumor_Sample_Barcode,",")+1)
   
+
+  # filter for minimum number of cell lines
+  agg2 <- agg[!((agg$numCelllines < 10) & grepl("_O",agg$Alteration)), ]
+  agg2 <- agg2[!(agg2$numCelllines < 10 & grepl("_NA",agg2$Alteration)), ]
+
   ### optional output number of cell lines for each alteration
   if (metadata){
     if (cancertypes){
@@ -123,12 +131,7 @@ parse_maf <- function(input_df, outdir, metadata, cancertypes,sample_data){
     fn = paste(outdir,"Q1_number_samples_per_feature",ct,".tsv",sep="")
     write.table(numsamplespermut,file=fn,row.names=FALSE,col.names=TRUE,sep="\t")
   }
-  
-  # filter for minimum number of cell lines
-  agg2 <- agg[!((agg$numCelllines < 10) & grepl("_O",agg$Alteration)), ]
-  agg2 <- agg2[!(agg2$numCelllines < 10 & grepl("_NA",agg2$Alteration)), ]
-  
-  
+
   df <- agg2 %>% mutate(Tumor_Sample_Barcode=str_split(Tumor_Sample_Barcode, ","))
   df <- df %>% unnest(Tumor_Sample_Barcode) %>% unique()
   newdf<- df
@@ -163,15 +166,15 @@ parse_maf <- function(input_df, outdir, metadata, cancertypes,sample_data){
   return(newdf)
 }
 
-features_full <- parse_maf(ccle, "../data/features/", FALSE, FALSE,sample_info)
-features_full_ct <- parse_maf(ccle, "../data/features/", FALSE, TRUE,sample_info)
-features_oncokb <- parse_maf(ccle_oncokb, "../data/features/", FALSE, FALSE,sample_info)
-features_oncokb_ct <- parse_maf(ccle_oncokb, "../data/features/", FALSE, TRUE,sample_info)
+features_full <- parse_maf(ccle,featuredir, FALSE, FALSE,sample_info)
+features_full_ct <- parse_maf(ccle, featuredir, FALSE, TRUE,sample_info)
+features_oncokb <- parse_maf(ccle_oncokb, featuredir, FALSE, FALSE,sample_info)
+features_oncokb_ct <- parse_maf(ccle_oncokb, featuredir, FALSE, TRUE,sample_info)
 
 
 # write output files
 
-output.file <- file("../data/features/Q1_CERES_full_MUT.tsv", "wb")
+output.file <- file(paste(featuredir,"Q1_CERES_full_MUT.tsv",sep=""), "wb")
 write.table(features_full,
             row.names = FALSE,
             col.names = TRUE,
@@ -180,7 +183,7 @@ write.table(features_full,
             quote=FALSE)
 close(output.file)
 
-output.file <- file("../data/features/Q1_CERES_full_CT.tsv", "wb")
+output.file <- file(paste(featuredir,"Q1_CERES_full_CT.tsv",sep=""), "wb")
 write.table(features_full_ct,
             row.names = FALSE,
             col.names = TRUE,
@@ -189,7 +192,7 @@ write.table(features_full_ct,
             quote=FALSE)
 close(output.file)
 
-output.file <- file("../data/features/Q1_CERES_oncoKB_MUT.tsv", "wb")
+output.file <- file(paste(featuredir,"Q1_CERES_oncoKB_MUT.tsv",sep=""), "wb")
 write.table(features_oncokb,
             row.names = FALSE,
             col.names = TRUE,
@@ -198,7 +201,7 @@ write.table(features_oncokb,
             quote=FALSE)
 close(output.file)
 
-output.file <- file("../data/features/Q1_CERES_oncoKB_CT.tsv", "wb")
+output.file <- file(paste(featuredir,"Q1_CERES_full_CT.tsv",sep=""), "wb")
 write.table(features_oncokb_ct,
             row.names = FALSE,
             col.names = TRUE,

@@ -1,9 +1,12 @@
 #!/bin/bash
 
 source activate superdendrix-env
+cd ../
 
 # downlaod data
-data/snakemake all
+cd data
+snakemake all
+cd ../
 
 # define parameters
 RANDSEED=2019
@@ -25,15 +28,22 @@ SETSIZE=3
 OUTPUT_SD="data/results/KRAS.txt"
 
 # compute CERES z-scores and identify six-sigma genes
+
+"check packages - revealerpy-env"
+echo "1"
 Rscript utils/compute_CERES_zscores.R
 
 # identify differential dependencies among the six-sigma genes
+echo "2"
 Rscript src/fit_tmm.R
 
 # score the differential dependencies
+echo "3"
+"start from here"
 python utils/fit_gmm.py -pf ${DIFF_DEP} -o ${GMM_OUTPUT}
 
 # maf annotation with OncoKB
+echo "4"
 Rscript src/oncokb_maf_annotator.R
 
 

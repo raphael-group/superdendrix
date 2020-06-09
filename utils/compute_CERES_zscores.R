@@ -8,7 +8,7 @@ profiledir = "../data/profiles/"
 library(readr)
 
 ### load data files
-gene_effect_cor <- read_csv(paste(rawdir,"gene_effect_corrected.csv",sep=""))
+gene_effect_cor <- read_csv(paste(rawdir,"Q1_gene_effect.csv",sep=""))
 
 colnames(gene_effect_cor)[1] <- "Sample"
 
@@ -37,12 +37,13 @@ sixsigmaRcount <- apply(sixsigmaR,2,function(x){sum(x)})
 minimums <- apply(zscores,2,function(x){min(x)})
 maximums <- apply(zscores,2,function(x){max(x)})
 
-sixsigma_summary <- data.frame(gene=colnames(zscores),sixsigmaLcount=sixsigmaLcount,sixsigmaRcount=sixsigmaRcount, min = minimums, max = maximums)
+sixsigma_summary <- data.frame(gene=colnames(zscores),sixsigmaLcount=sixsigmaLcount,sixsigmaRcount=sixsigmaRcount, min = minimums, max = maximums,stringsAsFactors = FALSE)
 sixsigma_summary$sixsigmaTotalcount <- with(sixsigma_summary, sixsigmaLcount + sixsigmaRcount)
 df_sixsigma_summary <- sixsigma_summary[,c(1,2,3,6,4,5)]
 
 ### CERES scores of six-sigma genes (store for fitting with gaussian mixture)
-sixsigma_genes <- CERES_zscores_sixsigma_summary[CERES_zscores_sixsigma_summary$sixsigmaTotalcount > 0,]$gene
+sixsigma_genes <- df_sixsigma_summary[df_sixsigma_summary$sixsigmaTotalcount > 0,]$gene
+
 gene_effect_cor_sixsigma <- gene_effect_cor[,c('Sample',sixsigma_genes)]
 
 

@@ -1,0 +1,28 @@
+Building DAG of jobs...
+Using shell: /usr/bin/bash
+Provided cores: 1
+Rules claiming more threads will be scaled down.
+Job counts:
+	count	jobs
+	1	all
+	1	download_ccle_maf
+	2
+
+[Tue Jun  9 04:13:38 2020]
+rule download_ccle_maf:
+    output: raw/depmap_19Q1_mutation_calls_v2.csv
+    jobid: 2
+
+[Tue Jun  9 04:13:45 2020]
+Finished job 2.
+1 of 2 steps (50%) done
+
+[Tue Jun  9 04:13:45 2020]
+localrule all:
+    input: raw/depmap_19Q1_mutation_calls_v2.csv, raw/Q1_gene_effect.csv, raw/cell_line_info.csv, raw/oncoKB_list.tsv
+    jobid: 0
+
+[Tue Jun  9 04:13:45 2020]
+Finished job 0.
+2 of 2 steps (100%) done
+Complete log: /n/fs/ragr-research/projects/sd/gitrepo/superdendrix/data/.snakemake/log/2020-06-09T041337.896964.snakemake.log

@@ -6,5 +6,5 @@
 *.log
 *.maf
 
-
+__pycashe__/
 .snakemake*

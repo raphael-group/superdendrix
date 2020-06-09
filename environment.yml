@@ -10,3 +10,10 @@ dependencies:
   - scipy
   - gurobi
   - numpy
+  - r-base =3.4.1
+  - r-essentials
+  - rpy2
+  - r-rjsonio
+  - r-viridis
+  - r-nloptr
+  - gxx_linux-64

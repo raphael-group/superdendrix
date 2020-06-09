@@ -9,15 +9,11 @@ SuperDendrix consists of three modules:
 
 ### Set up
 
-#### Python
-SuperDendrix modules are written in R and Python 3, and has some Python module dependencies. We suggest using Anaconda to manage Python dependencies. The dependencies are listed in the `environment.yml` file in this repository.
+#### Python and R
+SuperDendrix modules are written in R and Python 3, and has some R and Python module dependencies. We suggest using Anaconda to manage the dependencies. The dependencies are listed in the `environment.yml` file in this repository.
 
 To solve the ILP, SuperDendrix uses the [Gurobi Optimizer](http://www.gurobi.com/downloads/gurobi-optimizer), accessed through the `gurobi` Python module. Gurobi must be installed in order to run SuperDendrix.
 
-#### R
-SuperDendrix requires additional R packages that can be installed with the following command.
-
-    install.packages(c("readr", "EMMIXskew", "dplyr","stringr", "tidyr"))
 
 ### Usage
 #### Required data
@@ -40,29 +36,29 @@ To run SuperDendrix on on the CERES dataset, use the following commands:
 
 Compute CERES z-scores and identify the six-sigma genes.
 
-    Rscript ${SUPERDENDRIX_HOME}/utils/compute_CERES_zscores.R
+    Rscript utils/compute_CERES_zscores.R
 
 Fitting CERES dataset with mixtures of t-distributions to find differental dependencies.
 
-    Rscript ${SUPERDENDRIX_HOME}/src/fit_tmm.R
+    Rscript src/fit_tmm.R
 
 Fitting CERES dataset with mixtures of Gaussian distributions to score differential dependencies.
 
-    python ${SUPERDENDRIX_HOME}/utils/fit_gmm.py -pf ${PHENOTYPE} -o ${OUTPUT_FILE}
+    python utils/fit_gmm.py -pf ${PHENOTYPE} -o ${OUTPUT_FILE}
 
 Annotating mutations with OncoKB database of cancer mutations.
 
-    Rscript ${SUPERDENDRIX_HOME}/src/oncokb_maf_annotator.R
+    Rscript src/oncokb_maf_annotator.R
 
 #### Module 2 and 3
 
 Generating randomized feature matrices using the curveball method.
 
-    python ${SUPERDENDRIX_HOME}/utils/generate_null_matrices.py -m ${FEATURES} -p ${CYCLE} -o ${OUTPUT_FILE} -pre ${PREFIX} -rs ${RANDSEED}
+    python utils/generate_null_matrices.py -m ${FEATURES} -p ${CYCLE} -o ${OUTPUT_FILE} -pre ${PREFIX} -rs ${RANDSEED}
 
 Identifying an association between differential dependency and a set of genomic features and conducting model selection and evaluation of statistical significance.
 
-    python ${SUPERDENDRIX_HOME}/src/superdendrix.py -t ${THREADS} -T ${PHENOTYPE} -Tc ${GENE} -m ${FEATURES} -p ${CYCLE} -cp ${CP} -d ${DIRECTION} -k ${SETSIZE} -nm ${NULLMATRICES} -rs ${RANDSEED} -x -curve -o ${OUTPUT_FILE}
+    python src/superdendrix.py -t ${THREADS} -T ${PHENOTYPE} -Tc ${GENE} -m ${FEATURES} -p ${CYCLE} -cp ${CP} -d ${DIRECTION} -k ${SETSIZE} -nm ${NULLMATRICES} -rs ${RANDSEED} -x -curve -o ${OUTPUT_FILE}
 
 ### Demo
 A bashscript for an example analysis of increased dependency on KRAS profile from the CERES dataset is provided in the demo directory.

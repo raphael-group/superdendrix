@@ -28,7 +28,7 @@ zscores <- sweep(zscores,1,stds2,"/")
 
 CERES_zscores <- cbind(Sample = samples, zscores, stringsAsFactors = FALSE)
 
-### six_sigma differential dependency summary ####
+### sixsigma  summary ####
 
 sixsigmaL <- data.frame(apply(zscores,2,function(x){x < -6}))
 sixsigmaR <- data.frame(apply(zscores,2,function(x){x > 6}))
@@ -49,7 +49,7 @@ gene_effect_cor_sixsigma <- gene_effect_cor[,c('Sample',sixsigma_genes)]
 
 ### write output files
 
-output.file <- file(paste(profiledir,"CERES_differential_dependencies.tsv",sep=""),"wb")
+output.file <- file(paste(profiledir,"CERES_zscores.tsv",sep=""),"wb")
 write.table(CERES_zscores,
             row.names = FALSE,
             col.names = TRUE,

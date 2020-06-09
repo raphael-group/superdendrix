@@ -29,7 +29,6 @@ from i_o import *
 # Parse arguments
 parser = argparse.ArgumentParser()
 parser.add_argument('-pf', '--profile_file', type=str, required=True)
-parser.add_argument('-ef', '--events_file', type=str, required=True)
 parser.add_argument('-o', '--output_file', type=str, required=True)
 parser.add_argument('-nc', '--num_cores', type=int, default=1, required=False)
 parser.add_argument('--output_models', action='store_true', default=False, required=False,
@@ -40,27 +39,11 @@ parser.add_argument('-rs', '--rand_seed', type=int, default=1764, required=False
 args = parser.parse_args(sys.argv[1:])
 
 np.random.seed(args.rand_seed)
-# Load the events file
-eventToCases, mutation_samples = load_events(args.events_file, verbose=1)
 
 # Load the profile file
 profiles, profile_samples = load_profiles(args.profile_file, verbose=1)
-sampleToIndex = dict(zip(profile_samples, range(len(profile_samples))))
 events = sorted(profiles.keys())
-profile_sample_set = set(profile_samples)
 sampleToIndex = dict(zip(profile_samples, range(len(profile_samples))))
-
-
-def event_freq(name, ty):
-    event = name.split('_')[0] + '_' + ty.upper()
-    if event in eventToCases:
-        LL = sum(weighted_profiles[name][sampleToIndex[s]]
-                 for s in eventToCases[event] if s in profile_sample_set)
-        num = len(eventToCases[event] & profile_sample_set)
-    else:
-        LL = '--'
-        num = '--'
-    return num, LL
 
 # Fit GMM function
 
@@ -243,6 +226,6 @@ profile_names = sorted(weighted_profiles.keys())
 profile_matrix = [[profile_samples[i]] + [weighted_profiles[n][i]
                                           for n in profile_names] for i in range(len(profile_samples))]
 
-with open(args.output_file, 'w') as OUT:
+with open(args.output_file+".tsv", 'w') as OUT:
     OUT.write('#\t%s\n' % '\t'.join(profile_names))
     OUT.write('\n'.join('\t'.join(map(str, r)) for r in profile_matrix))

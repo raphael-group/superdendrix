@@ -12,7 +12,12 @@ library(EMMIXskew)
 library(dplyr)
 
 ### load data files
-CERES_z <- read_delim(paste(profiledir,"CERES_differential_dependencies.tsv",sep=""), 
+CERES_scores_sixsigma <- read_delim(paste(profiledir,"CERES_scores_sixsigma.tsv",sep=""), 
+                      "\t", escape_double = FALSE, trim_ws = TRUE)
+
+
+
+CERES_z <- read_delim(paste(profiledir,"CERES_zscores.tsv",sep=""), 
                       "\t", escape_double = FALSE, trim_ws = TRUE)
 CERES_z$Sample <- NULL
 
@@ -43,7 +48,7 @@ initobj1$delta <- c(0,0)
 
 
 ### fit with mixture models
-for (i in 1:length(genes)){
+for (i in 1:100){
   set.seed(rand.seed)
   gene = genes[i]
   mat <- CERES_z[,gene]
@@ -108,5 +113,16 @@ write.table(tmm_summary,
             quote = FALSE)
 close(output.file)
 
+differential_dependencies <- tmm_summary[tmm_summary$diffBIC>0,]$gene
+CERES_scores_2C <- CERES_scores_sixsigma[,differential_dependencies]
+
+output.file <- file(paste(profiledir,"CERES_scores_2C.tsv",sep=""), "wb")
+write.table(CERES_scores_2C,
+            row.names = FALSE,
+            col.names = TRUE,
+            file = output.file,
+            sep = "\t",
+            quote = FALSE)
+close(output.file)
 
 

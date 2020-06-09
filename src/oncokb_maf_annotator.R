@@ -201,7 +201,7 @@ write.table(features_oncokb,
             quote=FALSE)
 close(output.file)
 
-output.file <- file(paste(featuredir,"Q1_CERES_full_CT.tsv",sep=""), "wb")
+output.file <- file(paste(featuredir,"Q1_CERES_oncoKB_CT.tsv",sep=""), "wb")
 write.table(features_oncokb_ct,
             row.names = FALSE,
             col.names = TRUE,

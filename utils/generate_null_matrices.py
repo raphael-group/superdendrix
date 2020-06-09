@@ -24,9 +24,6 @@ def get_parser():
     parser.add_argument('-gf', '--gene_file', default=None, help='File of events to be included (optional).')
     # specific
     parser.add_argument('-M', '--mutations_only', default=False, action="store_true", help='Consider only mutations (events ending with \'_MUT\')')
-    parser.add_argument('-T', '--target', required=True, help='File name for target profile')
-    parser.add_argument('-Tf', '--target_format', default='achilles', choices=['achilles', 'revealer'], help='format of target profile [achilles]')
-    parser.add_argument('-Tc', '--target_column', required=False, help='Name of column to use in target profile')
     parser.add_argument('-o', '--output_file', help='Name of output file (csv)')
     parser.add_argument('-p', '--p_val_it', type=int, default=-1, help='Number of iterations to compute empirical p-value ([-1] = don\'t)')
     parser.add_argument('-pre', '--prefix', type=int, default=0, help='prefix of output file')
@@ -51,31 +48,9 @@ seed = []
 random.seed(args.random_seed) # founding year of Brown University
 np.random.seed(args.random_seed)
 
-# Generate/load the target profile
-w = {} # weights
-global numNanInf
-numNanInf = 0
-if args.target_format == 'revealer':
-    with open(args.target) as f:
-        arrs = [ l.rstrip().split("\t") for l in f if not l.startswith("#") ]
-        for arr in [arr for arr in arrs]:
-            w[arr[0]] = float(arr[1]) + args.offset
-elif args.target_format == 'achilles':
-    assert(args.target_column)
-    with open(args.target) as f:
-        line = f.readline()
-        ind = line.rstrip().split().index(args.target_column)# + 1
-        arrs = [ l.rstrip().split("\t") for l in f if not l.startswith("#") ]
-        #arrs = [ re.findall(r"[-\w']+", l) for l in f if not l.startswith("#") ]
-        #for arr in [arr for arr in arrs if arr[0] in patients]:
-        for arr in arrs:
-            w[arr[0]] = float(arr[ind])
-
-samples1 = w.keys()
-eventToCases, mutation_samples = load_events(args.mutation_matrix, verbose=1)
 
 # Load the mutation data
-m, N, genes, samples, events_to_samples, samples_to_genes = load_mutation_data(mutationMatrix, samples1, args.gene_file, args.mutations_only, args.min_freq, args.max_freq)
+m, N, genes, samples, events_to_samples, samples_to_genes = load_mutation_data(mutationMatrix, None, args.gene_file, args.mutations_only, args.min_freq, args.max_freq)
 
 logger.info('* Mutation data')
 logger.info('\t- Alterations: %s' % m)

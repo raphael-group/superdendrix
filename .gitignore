@@ -2,5 +2,6 @@
 *.tsv
 *.txt
 *.csv
-
+*.pyc
+*.log
 *.maf

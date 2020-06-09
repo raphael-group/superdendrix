@@ -1,0 +1,5 @@
+# Ignore text files
+*.tsv
+*.txt
+*.csv
+

@@ -30,7 +30,7 @@ CERES datasets of project DepMap from the Broad Institute for example analysis c
 in the data directory.
 
 ### Commands
-To run SuperDendrix on on the CERES dataset, use the following commands:
+SuperDendrix modules are run using the following commands:
 
 #### Module 1
 
@@ -61,5 +61,5 @@ Identifying an association between differential dependency and a set of genomic 
     python src/superdendrix.py -t ${THREADS} -T ${PHENOTYPE} -Tc ${GENE} -m ${FEATURES} -p ${CYCLE} -cp ${CP} -d ${DIRECTION} -k ${SETSIZE} -nm ${NULLMATRICES} -rs ${RANDSEED} -x -curve -o ${OUTPUT_FILE}
 
 ### Demo
-A bashscript for an example analysis of increased dependency on KRAS profile from the CERES dataset is provided in the demo directory.
+A bashscript for an example analysis of increased dependency on ARID1B profile from the CERES dataset is provided in the demo directory.
 

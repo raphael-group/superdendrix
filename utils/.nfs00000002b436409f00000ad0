@@ -1,8 +1,8 @@
 # fit with one and two-component mixture of t-distributions
 
-rawdir <- "../data/raw/"
-featuredir <- "../data/features/"
-profiledir <- "../data/profiles/"
+rawdir <- "data/raw/"
+featuredir <- "data/features/"
+profiledir <- "data/profiles/"
 sixsigma_only <- TRUE
 
 rand.seed <- 2019
@@ -19,6 +19,8 @@ CERES_scores_sixsigma <- read_delim(paste(profiledir,"CERES_scores_sixsigma.tsv"
 
 CERES_z <- read_delim(paste(profiledir,"CERES_zscores.tsv",sep=""), 
                       "\t", escape_double = FALSE, trim_ws = TRUE)
+
+samples <- CERES_z$Sample
 CERES_z$Sample <- NULL
 
 CERES_zscores_sixsigma_summary <- read_delim(paste(profiledir,"CERES_zscores_sixsigma_summary.tsv",sep=""), 
@@ -114,7 +116,7 @@ write.table(tmm_summary,
 close(output.file)
 
 differential_dependencies <- tmm_summary[tmm_summary$diffBIC>0,]$gene
-CERES_scores_2C <- CERES_scores_sixsigma[,differential_dependencies]
+CERES_scores_2C <- cbind(Sample = samples, CERES_scores_sixsigma[,differential_dependencies], stringsAsFactors = FALSE)
 
 output.file <- file(paste(profiledir,"CERES_scores_2C.tsv",sep=""), "wb")
 write.table(CERES_scores_2C,

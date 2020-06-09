@@ -133,12 +133,6 @@ for name, gmm in zip(events, gmms):
     weights = gmm.weights_
 #        if nnans > 0:
 #            print(name, nnans)
-'''
-    if np.max(weights) == weights[0]:
-        k, l = 0, 1 # k is higher
-    else:
-        k, l = 1, 0
-'''
 
     if np.max(means) == means[0]:
         i, j = 0, 1 # i is higher
@@ -227,5 +221,5 @@ profile_matrix = [[profile_samples[i]] + [weighted_profiles[n][i]
                                           for n in profile_names] for i in range(len(profile_samples))]
 
 with open(args.output_file+".tsv", 'w') as OUT:
-    OUT.write('#\t%s\n' % '\t'.join(profile_names))
+    OUT.write('Sample\t%s\n' % '\t'.join(profile_names))
     OUT.write('\n'.join('\t'.join(map(str, r)) for r in profile_matrix))

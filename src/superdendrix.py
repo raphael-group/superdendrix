@@ -29,17 +29,19 @@ from scipy.stats import ranksums
 
 import sys, time, argparse, socket, logging
 from collections import Counter
-from i_o import load_mutation_data, getLogger, load_profiles, load_events
 from gurobipy import *
 import numpy as np
 import math
 import random
 import statistics
 from collections import defaultdict
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '../utils'))
 from curveball_main import *
 from curveball import *
 from scanutils import *
 
+from i_o import load_mutation_data, getLogger, load_profiles, load_events
 # Load our local Python module for computing revealer IC
 #sys.path.append(os.path.join(os.path.dirname(__file__), '../revealerpy'))
 
@@ -60,7 +62,7 @@ def get_parser():
     parser.add_argument('-M', '--mutations_only', default=False, action="store_true", help='Consider only mutations (events ending with \'_MUT\')')
     parser.add_argument('-T', '--target', required=True, help='File name for target profile')
     parser.add_argument('-Tf', '--target_format', default='achilles', choices=['achilles', 'revealer'], help='format of target profile [achilles]')
-    parser.add_argument('-Tc', '--target_column', required=False, help='Name of column to use in target profile')
+    parser.add_argument('-Tc', '--target_column', required=False,type=str, help='Name of column to use in target profile')
     parser.add_argument('-s', '--seed', help='Seed events')
     parser.add_argument('-o', '--output_file', help='Name of output file (csv)')
     parser.add_argument('-r', '--reoptimize', default=False, action="store_true", help='Reoptimize for number of genes if k=-1')
@@ -117,7 +119,7 @@ def run(args):
         assert(args.target_column)
         with open(args.target) as f:
             line = f.readline()
-            ind = line.rstrip().split().index(args.target_column)# + 1
+            ind = line.rstrip().split("\t").index(args.target_column)# + 1
             arrs = [ l.rstrip().split("\t") for l in f if not l.startswith("#") ]
             #arrs = [ re.findall(r"[-\w']+", l) for l in f if not l.startswith("#") ]
             #for arr in [arr for arr in arrs if arr[0] in patients]:

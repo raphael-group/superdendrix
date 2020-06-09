@@ -45,7 +45,7 @@ df_sixsigma_summary <- sixsigma_summary[,c(1,2,3,6,4,5)]
 sixsigma_genes <- df_sixsigma_summary[df_sixsigma_summary$sixsigmaTotalcount > 0,]$gene
 
 #gene_effect_cor_sixsigma <- gene_effect_cor[,sixsigma_genes]
-gene_effect_cor_sixsigma <- cbind(Sample = samples, gene_effect_cor[,sixsigma_genes], stringsAsFactors = FALSE)
+gene_effect_cor_sixsigma <- cbind(Sample = samples, gene_effect_cor[,sixsigma_genes], stringAsFactors = FALSE)
 
 
 

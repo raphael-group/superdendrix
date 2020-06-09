@@ -16,4 +16,5 @@ dependencies:
   - r-rjsonio
   - r-viridis
   - r-nloptr
+  - r-emmixskew
   - gxx_linux-64

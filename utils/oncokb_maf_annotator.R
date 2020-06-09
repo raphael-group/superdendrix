@@ -4,9 +4,9 @@ library(readr)
 library(stringr)
 library(tidyr)
 
-rawdir = "../data/raw/"
-featuredir = "../data/features/"
-profiledir = "../data/profiles"
+rawdir = "data/raw/"
+featuredir = "data/features/"
+profiledir = "data/profiles/"
 
 # load oncoKB
 oncokb <- read_delim(paste(rawdir,"oncoKB_list.tsv",sep=""), 
@@ -20,7 +20,7 @@ ccle <- read_delim(paste(rawdir,"depmap_19Q1_mutation_calls_v2.csv",sep=""),
 ccle$X1 <- NULL
 
 # load CERES cell lines
-sample_info <- read_csv(paste(rawdir,"Q1_CERES_celllines.csv",sep=""))
+sample_info <- read_csv(paste(rawdir,"cell_line_info.csv",sep=""))
 
 # restrict to cell lines with CERES scores
 ccle <- ccle %>% filter(DepMap_ID %in% sample_info$DepMap_ID)
@@ -105,10 +105,8 @@ ccle_oncokb <- ccle[!grepl("noONCOKB", ccle$"Variant annotation"),]
 #### change to sample - alteration format ####
 ##############################################
 
-paste(..., sep = "")
 
-
-parse_maf <- function(input_df, outdir, metadata, cancertypes,sample_data){
+parse_maf <- function(input_df, outdir, cancertypes,sample_data){
   agg <- aggregate(Tumor_Sample_Barcode ~ Alteration, data = input_df,paste, collapse = ",")
   
   df <- agg %>% mutate(Tumor_Sample_Barcode=str_split(Tumor_Sample_Barcode, ","))
@@ -123,15 +121,6 @@ parse_maf <- function(input_df, outdir, metadata, cancertypes,sample_data){
   agg2 <- agg2[!(agg2$numCelllines < 10 & grepl("_NA",agg2$Alteration)), ]
 
   ### optional output number of cell lines for each alteration
-  if (metadata){
-    if (cancertypes){
-      ct <- "_cancertypes"
-    }
-    numsamplespermut <- data.frame(feature=agg2$Alteration,numCelllines=agg2$numCelllines)
-    fn = paste(outdir,"Q1_number_samples_per_feature",ct,".tsv",sep="")
-    write.table(numsamplespermut,file=fn,row.names=FALSE,col.names=TRUE,sep="\t")
-  }
-
   df <- agg2 %>% mutate(Tumor_Sample_Barcode=str_split(Tumor_Sample_Barcode, ","))
   df <- df %>% unnest(Tumor_Sample_Barcode) %>% unique()
   newdf<- df
@@ -141,15 +130,6 @@ parse_maf <- function(input_df, outdir, metadata, cancertypes,sample_data){
   newdf$numGenes <- with(newdf,str_count(newdf$Alteration,"\t")+1)
   
   ### optional output number of alterations for each cell lines
-  if (metadata){
-    if (cancertypes){
-      ct <- "_cancertypes"
-    }
-    nummutpersample <- data.frame(sample=newdf$Tumor_Sample_Barcode,numAlterations=newdf$numGenes)
-    fn = paste(outdir,"Q1_features_per_sample",ct,".tsv",sep="")
-    write.table(nummutpersample,file=fn,row.names=FALSE,col.names=TRUE,sep="\t")
-  }
-
   newdf$numGenes <- NULL
   colnames(newdf) <- c("#Sample","Events")
   
@@ -166,11 +146,15 @@ parse_maf <- function(input_df, outdir, metadata, cancertypes,sample_data){
   return(newdf)
 }
 
-features_full <- parse_maf(ccle,featuredir, FALSE, FALSE,sample_info)
-features_full_ct <- parse_maf(ccle, featuredir, FALSE, TRUE,sample_info)
-features_oncokb <- parse_maf(ccle_oncokb, featuredir, FALSE, FALSE,sample_info)
-features_oncokb_ct <- parse_maf(ccle_oncokb, featuredir, FALSE, TRUE,sample_info)
+features_full <- parse_maf(ccle,featuredir, FALSE,sample_info)
+features_full_ct <- parse_maf(ccle, featuredir, TRUE,sample_info)
+features_oncokb <- parse_maf(ccle_oncokb, featuredir, FALSE,sample_info)
+features_oncokb_ct <- parse_maf(ccle_oncokb, featuredir, TRUE,sample_info)
 
+feature_list <- features_oncokb_ct %>% mutate(Events=str_split(Events, "\t"))
+feature_list <- feature_list %>% unnest(Events)
+features <- data.frame(Alteration=unique(feature_list$Events)
+colnames(features) <- "#alteration"
 
 # write output files
 
@@ -210,6 +194,15 @@ write.table(features_oncokb_ct,
             quote=FALSE)
 close(output.file)
 
+
+output.file <- file(paste(featuredir,"Q1_CERES_oncoKB_feature_list.csv",sep=""), "wb")
+write.table(features,
+            row.names = FALSE,
+            col.names = TRUE,
+            file = output.file,
+            sep = ",",
+            quote=FALSE)
+close(output.file)
 
 
 

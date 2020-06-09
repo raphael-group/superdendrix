@@ -1,0 +1,86 @@
+from os.path import join
+
+################################################################################
+# SETTINGS, FILES, AND DIRECTORIES
+################################################################################
+# Directories
+RAW_DIR = 'raw'
+FEATURES_DIR = 'features'
+PROFILES_DIR = 'profiles'
+
+# URLs
+CCLE_MAF_URL = 'https://depmap.org/portal/download/api/download/external?file_name=ccle%2Fdepmap-mutation-calls-9a1a.9%2Fdepmap_19Q1_mutation_calls_v2.csv'
+CERES_SCORES_URL = 'https://ndownloader.figshare.com/files/14221388'
+CELL_LINE_INFO_URL = 'https://www.dropbox.com/s/v74844gn91l8vrr/Q1_CERES_celllines.csv?dl=0'
+ONCOKB_ANNOTATION_URL = 'https://www.dropbox.com/s/g659hxrpsbwvcog/oncoKB_list.tsv?dl=0'
+
+# Files
+CCLE_MAF = join(RAW_DIR, 'depmap_19Q1_mutation_calls_v2.csv')
+CERES_SCORES = join(RAW_DIR, 'Q1_gene_effect.csv')
+CELL_LINE_INFO = join(RAW_DIR, 'cell_line_info.csv')
+ONCOKB_ANNOTATION = join(RAW_DIR, 'oncoKB_list.tsv')
+
+##CCLE_FEATURES      = join(EVENTS_DIR, 'ccle-revealer-events.tsv')
+##DEMETER_OUTCOMES = join(OUTCOMES_DIR, 'demeter-sig-genes-depmap-outcomes.tsv')
+
+################################################################################
+# COMMANDS
+################################################################################
+# Download
+rule download_ccle_maf:
+	params:
+		url=CCLE_MAF_URL
+	output:
+		CCLE_MAF
+	shell:
+		'wget -O {output} {params.url}'
+
+rule download_ceres_scores:
+	params:
+		url=CERES_SCORES_URL
+	output:
+		CERES_SCORES
+	shell:
+		'wget -O {output} {params.url}'
+
+rule download_ceres_cell_line_info:
+	params:
+		url=CELL_LINE_INFO_URL
+	output:
+		CELL_LINE_INFO
+	shell:
+		'wget -O {output} {params.url}'
+
+rule download_oncokb_annotation:
+	params:
+		url=ONCOKB_ANNOTATION_URL
+	output:
+		ONCOKB_ANNOTATION
+	shell:
+		'wget -O {output} {params.url}'
+
+# # Process
+# rule process_ccle:
+# 	input:
+# 		CCLE_REVEALER_MAF
+# 	output:
+# 		CCLE_EVENTS
+# 	shell:
+# 		'python parse_ccle_events.py -i {input} -o {output}'
+
+# rule process_demeter:
+# 	input:
+# 		scores=DEMETER_KNOCKOUT_SCORES,
+# 		gene_summary=DEMETER_GENE_SUMMARY,
+# 		events=CCLE_EVENTS
+# 	output:
+# 		DEMETER_OUTCOMES
+# 	shell:
+# 		'python parse_demeter_outcomes.py -sf {input.scores} -gf {input.gene_summary} -ef {input.events} -o {output}'
+
+# # General
+# rule all:
+# 	input:
+# 		CCLE_EVENTS,
+# 		DEMETER_OUTCOMES
+

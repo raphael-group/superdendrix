@@ -50,7 +50,7 @@ Annotating mutations with OncoKB database of cancer mutations.
 
     Rscript src/oncokb_maf_annotator.R
 
-#### Module 2 and 3
+#### Modules 2 and 3
 
 Generating randomized feature matrices using the curveball method.
 

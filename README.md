@@ -16,6 +16,7 @@ To solve the ILP, SuperDendrix uses the [Gurobi Optimizer](http://www.gurobi.com
 
 
 ### Usage
+
 #### Required data
 SuperDendrix requires the following data:
 

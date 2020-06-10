@@ -7,33 +7,36 @@ SuperDendrix consists of three modules:
 2) Finding feature sets associated with differential dependencies. 
 3) Evaluating statistical significance of associations. 
 
-### Set up
+## Set up
 
-#### Python and R
+### Python and R
 SuperDendrix modules are written in R and Python 3, and has some R and Python module dependencies. We suggest using Anaconda to manage the dependencies. The dependencies are listed in the `environment.yml` file in this repository.
 
 To solve the ILP, SuperDendrix uses the [Gurobi Optimizer](http://www.gurobi.com/downloads/gurobi-optimizer), accessed through the `gurobi` Python module. Gurobi must be installed in order to run SuperDendrix.
 
 
-### Usage
+## Usage
 
-#### Required data
+### Required data
+
 SuperDendrix requires the following data:
 
 1. Quantitative phenotypes (e.g. gene dependency) across samples.
 2. A list of features (e.g. genomic alterations) for each sample.
 3. (Optional) Categorical information (e.g. cell type) of each sample.
 
-#### Downloading required data
+### Downloading required data
+
 CERES datasets of project DepMap from the Broad Institute for example analysis can be downloaded using the following command.
 
     snakemake all
 in the data directory.
 
-### Commands
+## Commands
+
 SuperDendrix modules are run using the following commands:
 
-#### Module 1
+### Module 1
 
 Compute CERES z-scores and identify the six-sigma genes.
 
@@ -51,7 +54,7 @@ Annotating mutations with OncoKB database of cancer mutations.
 
     Rscript src/oncokb_maf_annotator.R
 
-#### Modules 2 and 3
+### Modules 2 and 3
 
 Generating randomized feature matrices using the curveball method.
 
@@ -61,6 +64,6 @@ Identifying an association between differential dependency and a set of genomic 
 
     python src/superdendrix.py -t ${THREADS} -T ${PHENOTYPE} -Tc ${GENE} -m ${FEATURES} -p ${CYCLE} -cp ${CP} -d ${DIRECTION} -k ${SETSIZE} -nm ${NULLMATRICES} -rs ${RANDSEED} -x -curve -o ${OUTPUT_FILE}
 
-### Demo
+## Demo
 A bashscript for an example analysis of increased dependency on ARID1B profile from the CERES dataset is provided in the demo directory.
 

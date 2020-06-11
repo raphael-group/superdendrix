@@ -13,7 +13,6 @@ snakemake all
 # make directories
 mkdir profiles features
 mkdir features/rand_mat
-mkdir results
 
 cd ../
 
@@ -38,13 +37,13 @@ SETSIZE=3
 OUTPUT_SD="data/results/ARID1B.txt"
 FEATURE_LIST="data/features/Q1_CERES_oncoKB_feature_list.csv"
 # compute CERES z-scores and identify six-sigma genes
-##Rscript utils/compute_CERES_zscores.R
+Rscript utils/compute_CERES_zscores.R
 
 # identify differential dependencies among the six-sigma genes
-##Rscript utils/fit_tmm.R
+Rscript utils/fit_tmm.R
 
 # score the differential dependencies
-##python utils/fit_gmm.py -pf ${DIFF_DEP} -o ${GMM_OUTPUT}
+python utils/fit_gmm.py -pf ${DIFF_DEP} -o ${GMM_OUTPUT}
 
 # maf annotation with OncoKB
 Rscript utils/oncokb_maf_annotator.R

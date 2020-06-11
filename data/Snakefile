@@ -6,7 +6,7 @@ from os.path import join
 # Directories
 RAW_DIR = 'raw'
 FEATURES_DIR = 'features'
-FEATURES_RM_DIR = 'features/rand_mat'
+#FEATURES_RM_DIR = 'features/rand_mat'
 PROFILES_DIR = 'profiles'
 RESULTS_DIR = 'results'
 
@@ -75,6 +75,7 @@ rule download_oncokb_annotation:
 		ONCOKB_ANNOTATION
 	shell:
 		'wget -O {output} {params.url}'
+
 
 # # Process
 # rule process_ccle:

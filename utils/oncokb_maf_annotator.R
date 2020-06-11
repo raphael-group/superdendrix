@@ -153,7 +153,7 @@ features_oncokb_ct <- parse_maf(ccle_oncokb, featuredir, TRUE,sample_info)
 
 feature_list <- features_oncokb_ct %>% mutate(Events=str_split(Events, "\t"))
 feature_list <- feature_list %>% unnest(Events)
-features <- data.frame(Alteration=unique(feature_list$Events)
+features <- data.frame(Alteration=unique(feature_list$Events))
 colnames(features) <- "#alteration"
 
 # write output files

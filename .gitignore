@@ -5,6 +5,7 @@
 *.pyc
 *.log
 *.maf
+*.nfs
 
 __pycashe__/
 .snakemake*

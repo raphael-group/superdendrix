@@ -62,7 +62,7 @@ Generating randomized feature matrices using the curveball method.
 
 Identifying an association between differential dependency and a set of genomic features and conducting model selection and evaluation of statistical significance.
 
-    python src/superdendrix.py -t ${THREADS} -T ${PHENOTYPE} -Tc ${GENE} -m ${FEATURES} -p ${CYCLE} -cp ${CP} -d ${DIRECTION} -k ${SETSIZE} -nm ${NULLMATRICES} -rs ${RANDSEED} -x -curve -o ${OUTPUT_FILE}
+    python src/superdendrix.py -t ${THREADS} -T ${PHENOTYPE} -Tc ${GENE} -m ${FEATURES} -gf ${FEATURELIST} -p ${CYCLE} -cp ${CP} -d ${DIRECTION} -k ${SETSIZE} -nm ${NULLMATRICES} -rs ${RANDSEED} -x -curve -o ${OUTPUT_FILE}
 
 ## Demo
 A bashscript for an example analysis of increased dependency on ARID1B profile from the CERES dataset is provided in the demo directory.

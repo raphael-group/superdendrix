@@ -5,7 +5,6 @@ from os.path import join
 ################################################################################
 # Directories
 
-DIR_19Q1 = '19Q1/'
 DIR_20Q2 = '20Q2/'
 
 RAW_DIR = 'raw'
@@ -17,12 +16,6 @@ RESULTS_DIR = 'results'
 
 
 # URLs
-##### 19Q1 ####
-#CCLE_MAF_URL = 'https://www.dropbox.com/s/6665qeaesoujr88/depmap_19Q1_mutation_calls_v2.csv?dl=0' #19Q1
-#CCLE_MAF_URL = 'https://depmap.org/portal/download/api/download/external?file_name=ccle%2Fdepmap-mutation-calls-9a1a.9%2Fdepmap_19Q1_mutation_calls_v2.csv'
-#CERES_SCORES_URL = 'https://ndownloader.figshare.com/files/14221385'
-#ONCOKB_ANNOTATION_URL = 'https://www.dropbox.com/s/g659hxrpsbwvcog/oncoKB_list.tsv?dl=0'
-
 ##### 20Q2 ####
 CCLE_MAF_URL = 'https://ndownloader.figshare.com/files/22629110'
 CERES_SCORES_URL = 'https://ndownloader.figshare.com/files/22629068'
@@ -32,11 +25,6 @@ CELL_LINE_INFO_URL = 'https://ndownloader.figshare.com/files/22629137'
 CCLE_MAF = join(DIR_20Q2+RAW_DIR, 'mutations.csv')
 CERES_SCORES = join(DIR_20Q2+RAW_DIR, 'gene_effect.csv')
 CELL_LINE_INFO = join(DIR_20Q2+RAW_DIR, 'sample_info.csv')
-CCLE_MAF_ONCOKB = join(DIR_20Q2+FEATURES_DIR, 'mutations_oncokb.csv')
-#ONCOKB_ANNOTATION = join(RAW_DIR, 'oncoKB_list.tsv')
-
-##CCLE_FEATURES      = join(EVENTS_DIR, 'ccle-revealer-events.tsv')
-##DEMETER_OUTCOMES = join(OUTCOMES_DIR, 'demeter-sig-genes-depmap-outcomes.tsv')
 
 ################################################################################
 # COMMANDS
@@ -48,9 +36,6 @@ rule all:
         CCLE_MAF,
         CERES_SCORES,
         CELL_LINE_INFO,
-        CCLE_MAF_ONCOKB
-        #ONCOKB_ANNOTATION
-
 
 #Download
 rule download_ccle_maf:
@@ -76,49 +61,3 @@ rule download_ceres_cell_line_info:
         CELL_LINE_INFO
     shell:
         'wget -O {output} {params.url}'
-
-# Process
-rule process_ccle:
-    input:
-        CCLE_MAF
-    output:
-        CCLE_MAF_ONCOKB
-    shell:
-        'python ../../oncokb-annotator/MafAnnotator.py -i {input} -o {output} -b "12cd9caf-9fb8-4098-80fd-9de027fe6b9a"'
-
-'''
-rule download_oncokb_annotation:
-    params:
-        url=ONCOKB_ANNOTATION_URL
-    output:
-        ONCOKB_ANNOTATION
-    shell:
-        'wget -O {output} {params.url}'
-'''
-
-
-# # Process
-# rule process_ccle:
-# 	input:
-# 		CCLE_REVEALER_MAF
-# 	output:
-# 		CCLE_EVENTS
-# 	shell:
-# 		'python parse_ccle_events.py -i {input} -o {output}'
-
-# rule process_demeter:
-# 	input:
-# 		scores=DEMETER_KNOCKOUT_SCORES,
-# 		gene_summary=DEMETER_GENE_SUMMARY,
-# 		events=CCLE_EVENTS
-# 	output:
-# 		DEMETER_OUTCOMES
-# 	shell:
-# 		'python parse_demeter_outcomes.py -sf {input.scores} -gf {input.gene_summary} -ef {input.events} -o {output}'
-
-# # General
-# rule all:
-# 	input:
-# 		CCLE_EVENTS,
-# 		DEMETER_OUTCOMES
-

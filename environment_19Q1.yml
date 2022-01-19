@@ -1,0 +1,20 @@
+name: superdendrix-env
+channels:
+  - gurobi
+  - bioconda
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.6
+  - snakemake
+  - scipy
+  - gurobi
+  - numpy
+  - r-base =3.4.1
+  - r-essentials
+  - rpy2
+  - r-rjsonio
+  - r-viridis
+  - r-nloptr
+  - r-emmixskew
+  - gxx_linux-64

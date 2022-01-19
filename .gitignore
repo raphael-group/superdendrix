@@ -222,5 +222,8 @@ data/Sanger_19Q1_new/
 *.maf
 *.nfs
 
+# old environments
+./environment_19Q1.yml
+
 __pycashe__/
 .snakemake*

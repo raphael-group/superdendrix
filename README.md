@@ -1,6 +1,8 @@
 # SuperDendrix
 
 SuperDendrix is an algorithm that uses an integer linear program (ILP) for identifying mutually exclusive sets of genomic features that are correlated with a dependency profile.
+This repository includes instructions for installation and tutorials using example data for SuperDendrix.
+This README is work in progress.
 
 SuperDendrix consists of three modules:
 1) Scoring differential dependencies and selecting genomic and cell-type features.
@@ -62,7 +64,7 @@ Generating randomized feature matrices using the curveball method.
 
 Identifying an association between differential dependency and a set of genomic features and conducting model selection and evaluation of statistical significance.
 
-    python src/superdendrix.py -t ${THREADS} -T ${PHENOTYPE} -Tc ${GENE} -m ${FEATURES} -p ${CYCLE} -cp ${CP} -d ${DIRECTION} -k ${SETSIZE} -nm ${NULLMATRICES} -rs ${RANDSEED} -x -curve -o ${OUTPUT_FILE}
+    python src/superdendrix.py -t ${THREADS} -T ${PHENOTYPE} -Tc ${GENE} -m ${FEATURES} -gf ${FEATURELIST} -p ${CYCLE} -cp ${CP} -d ${DIRECTION} -k ${SETSIZE} -nm ${NULLMATRICES} -rs ${RANDSEED} -x -curve -o ${OUTPUT_FILE}
 
 ## Demo
 A bashscript for an example analysis of increased dependency on ARID1B profile from the CERES dataset is provided in the demo directory.

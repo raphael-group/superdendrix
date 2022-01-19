@@ -10,7 +10,7 @@ DIR_20Q2 = '20Q2/'
 
 RAW_DIR = 'raw'
 FEATURES_DIR = 'features'
-FEATURES_RM_DIR = 'features/rand_mat'
+#FEATURES_RM_DIR = 'features/rand_mat'
 PROFILES_DIR = 'profiles'
 RESULTS_DIR = 'results'
 
@@ -95,6 +95,7 @@ rule download_oncokb_annotation:
     shell:
         'wget -O {output} {params.url}'
 '''
+
 
 # # Process
 # rule process_ccle:

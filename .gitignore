@@ -222,6 +222,5 @@ data/Sanger_19Q1_new/
 *.maf
 *.nfs
 
-
 __pycashe__/
 .snakemake*

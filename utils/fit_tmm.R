@@ -5,6 +5,11 @@ featuredir <- "data/features/"
 profiledir <- "data/profiles/"
 sixsigma_only <- TRUE
 
+rawdir = "data/20Q2/raw/"
+featuredir = "data/20Q2/features/"
+profiledir = "data/20Q2/profiles/"
+
+
 rand.seed <- 2019
 ### load library
 library(readr)
@@ -17,13 +22,13 @@ CERES_scores_sixsigma <- read_delim(paste(profiledir,"CERES_scores_sixsigma.tsv"
 
 
 
-CERES_z <- read_delim(paste(profiledir,"CERES_zscores.tsv",sep=""), 
+CERES_z <- read_delim(paste(profiledir,"CERES_z-scores.tsv",sep=""), 
                       "\t", escape_double = FALSE, trim_ws = TRUE)
 
 samples <- CERES_z$Sample
 CERES_z$Sample <- NULL
 
-CERES_zscores_sixsigma_summary <- read_delim(paste(profiledir,"CERES_zscores_sixsigma_summary.tsv",sep=""), 
+CERES_zscores_sixsigma_summary <- read_delim(paste(profiledir,"CERES_z-scores_sixsigma_summary.tsv",sep=""), 
                                              "\t", escape_double = FALSE, trim_ws = TRUE)
 
 ### select six-sigma genes
@@ -49,7 +54,7 @@ initobj1$delta <- c(0,0)
 
 
 ### fit with mixture models
-for (i in 1:100){
+for (i in 1:length(genes)){
   set.seed(rand.seed)
   gene = genes[i]
   mat <- CERES_z[,gene]
@@ -93,9 +98,9 @@ for (i in 1:100){
   }
   
   if (n1 < n2){
-    direction <- "increased dependency"
+    direction <- "increased_dependency"
   }else {
-    direction <- "decreased dependency"
+    direction <- "decreased_dependency"
   }
   
   currrow <- list(gene,diffBIC, mu1, dof1, w1, n1, mu2, dof2, w2, n2, k1$loglik, k2$loglik, k1$bic, k2$bic, direction)
@@ -105,7 +110,7 @@ for (i in 1:100){
 tmm_summary <- tmm_summary %>% arrange(desc(diffBIC))
 
 
-output.file <- file(paste(profiledir,"Q1_tmm_summary.tsv",sep=""), "wb")
+output.file <- file(paste(profiledir,"tmm_summary.tsv",sep=""), "wb")
 write.table(tmm_summary,
             row.names = FALSE,
             col.names = TRUE,

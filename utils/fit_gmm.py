@@ -10,6 +10,7 @@
 # 0530: ratio based on comp size (background vs significant)
 
 # 1125: ratio based on means (higher) / (lower)
+# 20201129: responsibility (higher) / (higher + lower) added
 import sys
 import os
 import argparse
@@ -117,6 +118,7 @@ if num_cores != 1:
 # Filter the resulting profiles
 print('* Filtering GMMs...')
 weighted_profiles = dict()
+responsibilities = dict()
 models = dict()
 excluded = set()
 rows = []
@@ -151,6 +153,7 @@ for name, gmm in zip(events, gmms):
     ##component with higher mean / lower mean
     #rat = np.log(resp[:, l] / resp[:, k])
     rat = np.log(resp[:, i] / resp[:, j])
+    responsibility = resp[:, i]
     toolarge = 0
     toosmall = 0
     for k in range(len(rat)):
@@ -163,9 +166,13 @@ for name, gmm in zip(events, gmms):
 
     #weighted_profiles[name] = list(np.log(resp[:, j] / resp[:, i]))
     weighted_profiles[name] = list(rat)
+    responsibilities[name] = list(responsibility)
     # Add back the NaNs as having weight zero
     for idx in reversed(gmm.nan_indices):
         weighted_profiles[name].insert(idx, 0)
+
+    for idx in reversed(gmm.nan_indices):
+        responsibilities[name].insert(idx, 0)
 
     # Sum the LLRs for samples with mutations/amplifications/deletions
     # in the profile gene
@@ -220,6 +227,16 @@ profile_names = sorted(weighted_profiles.keys())
 profile_matrix = [[profile_samples[i]] + [weighted_profiles[n][i]
                                           for n in profile_names] for i in range(len(profile_samples))]
 
-with open(args.output_file+".tsv", 'w') as OUT:
+with open(args.output_file+"_2Cscores.tsv", 'w') as OUT:
     OUT.write('Sample\t%s\n' % '\t'.join(profile_names))
     OUT.write('\n'.join('\t'.join(map(str, r)) for r in profile_matrix))
+
+
+profile_names_2 = sorted(responsibilities.keys())
+profile_matrix_2 = [[profile_samples[i]] + [responsibilities[n][i]
+                                          for n in profile_names_2] for i in range(len(profile_samples))]
+
+with open(args.output_file+"_responsibilities.tsv", 'w') as OUT:
+    OUT.write('Sample\t%s\n' % '\t'.join(profile_names_2))
+    OUT.write('\n'.join('\t'.join(map(str, r)) for r in profile_matrix_2))
+

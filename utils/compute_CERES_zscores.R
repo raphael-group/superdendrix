@@ -4,17 +4,26 @@ rawdir = "data/raw/"
 featuredir = "data/features/"
 profiledir = "data/profiles/"
 
+
+rawdir = "data/20Q2/raw/"
+featuredir = "data/20Q2/features/"
+profiledir = "data/20Q2/profiles/"
+
+
 ### load library
 library(readr)
 
 ### load data files
-gene_effect_cor <- read_csv(paste(rawdir,"Q1_gene_effect.csv",sep=""))
+gene_effect_cor <- read_csv(paste(rawdir,"gene_effect.csv",sep=""))
 
 colnames(gene_effect_cor)[1] <- "Sample"
 
 scores <- gene_effect_cor
 samples <- scores$Sample
 scores$Sample <- NULL
+
+### remove columns with NA entries
+scores <- scores[ , colSums(is.na(scores)) == 0]
 
 
 ### compute CERES z-scores according to Meyers et al., 2017
@@ -51,7 +60,7 @@ gene_effect_cor_sixsigma <- cbind(Sample = samples, gene_effect_cor[,sixsigma_ge
 
 ### write output files
 
-output.file <- file(paste(profiledir,"CERES_zscores.tsv",sep=""),"wb")
+output.file <- file(paste(profiledir,"CERES_z-scores.tsv",sep=""),"wb")
 write.table(CERES_zscores,
             row.names = FALSE,
             col.names = TRUE,
@@ -69,7 +78,7 @@ write.table(gene_effect_cor_sixsigma,
             quote = FALSE)
 close(output.file)
 
-output.file <- file(paste(profiledir,"CERES_zscores_sixsigma_summary.tsv",sep=""),"wb")
+output.file <- file(paste(profiledir,"CERES_z-scores_sixsigma_summary.tsv",sep=""),"wb")
 write.table(df_sixsigma_summary,
             row.names = FALSE,
             col.names = TRUE,

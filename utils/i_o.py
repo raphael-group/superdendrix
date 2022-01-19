@@ -67,13 +67,13 @@ def load_mutation_data(filename, patients=None, geneFile=None, mut_only = False,
     genes, patients = list(geneToCases.keys()), list(patientToGenes.keys())
 
     if mut_only:
-       toRemove = [ g for g in genes if not g.endswith("MUT") ]
-       if verbose: print("Warning:", len(toRemove), "events removed because no mutations")
-       for g in toRemove:
-           for p in geneToCases[g]:
-               patientToGenes[p].remove(g)
-           del geneToCases[g]
-           genes.remove(g)
+        toRemove = [ g for g in genes if not g.endswith("MUT") ]
+        if verbose: print("Warning:", len(toRemove), "events removed because no mutations")
+        for g in toRemove:
+            for p in geneToCases[g]:
+                patientToGenes[p].remove(g)
+            del geneToCases[g]
+            genes.remove(g)
 
     toRemove = [ g for g in genes if len(geneToCases[g]) < min_freq or len(geneToCases[g]) > max_freq ]
     if verbose: print("Warning:", len(toRemove), "events removed because of too low/high frequency")
@@ -87,20 +87,44 @@ def load_mutation_data(filename, patients=None, geneFile=None, mut_only = False,
 
     return m, n, genes, patients, geneToCases, patientToGenes
 
+ # Load event file
+def load_events(mutation_file, verbose=0):
+    if verbose > 0:
+        print('* Loading mutations...')
+    with open(mutation_file, 'r') as IN:
+        arrs = [l.rstrip('\n').split('\t')
+                for l in IN if not l.startswith('#')]
+        eventToCases, mutation_samples = defaultdict(set), set()
+        for arr in arrs:
+            sample = arr[0]
+            mutation_samples.add(sample)
+            for event in arr[1:]:
+                eventToCases[event].add(sample)
+    if verbose > 0:
+        print('\t- Events: %s' % len(eventToCases))
+    return eventToCases, mutation_samples
+
 
 # Load the profile file
 def load_profiles(profile_file, sample_whitelist=None, verbose=0):
     if verbose > 0:
         print('* Loading profiles...')
     with open(profile_file, 'r') as IN:
-        arrs = [l.rstrip('\n').split('\t')
+        if profile_file.endswith(".tsv"):
+            delim = "\t"
+        elif profile_file.endswith(".csv"):
+            delim = ","
+        arrs = [l.rstrip('\n').split(delim)
                 for l in IN if not l.startswith('#')]
+#        arrs = [l.rstrip('\n').split(',')
+#                for l in IN]
+        print("#####################")
         profile_events = arrs.pop(0)[1:]
         profile_samples = [arr[0] for arr in arrs]
         #print(profile_samples)
         #print(profile_events)
         profile_matrix = np.array(
-            [[float(a) if a.lower() != 'na' else np.nan for a in arr[1:]] for arr in arrs])
+            [[float(a) if (a.lower() != 'na') and (a != '') else np.nan for a in arr[1:]] for arr in arrs])
 
         # Restrict to given list of samples in the whitelist
         if sample_whitelist is not None:
@@ -120,23 +144,30 @@ def load_profiles(profile_file, sample_whitelist=None, verbose=0):
 
     return profiles, samples
 
-
- # Load event file
-def load_events(mutation_file, verbose=0):
-    if verbose > 0:
-        print('* Loading mutations...')
-    with open(mutation_file, 'r') as IN:
-        arrs = [l.rstrip('\n').split('\t')
-                for l in IN if not l.startswith('#')]
-        eventToCases, mutation_samples = defaultdict(set), set()
+# Load one differential dependency
+def load_single_profile(profile_fn, gene):
+    # Generate/load the target profile
+    w = {} # weights
+    global numNanInf
+    numNanInf = 0
+    with open(profile_fn) as f:
+        line = f.readline()
+        delim = "\t" if profile_fn.endswith(".tsv") else ","
+        line2 = line.rstrip().split(delim)
+        line2 = [g.split("_")[0] for g in line2]
+        #ind = line.rstrip().split(delim).index(gene)# + 1
+        ind = line2.index(gene)# + 1
+        arrs = [ l.rstrip().split(delim) for l in f if not l.startswith("#") ]
+        #arrs = [ re.findall(r"[-\w']+", l) for l in f if not l.startswith("#") ]
+        #for arr in [arr for arr in arrs if arr[0] in patients]:
         for arr in arrs:
-            sample = arr[0]
-            mutation_samples.add(sample)
-            for event in arr[1:]:
-                eventToCases[event].add(sample)
-    if verbose > 0:
-        print('\t- Events: %s' % len(eventToCases))
-    return eventToCases, mutation_samples
+            if arr[ind] == "":
+                w[arr[0]] = 0.0
+            else:
+                w[arr[0]] = float(arr[ind])
+    return w
+
+
 
  # Load cancer type information for each cell line (CL\tCT)
 def load_cancertype(ct_file, verbose=0, IC=True, th=10):

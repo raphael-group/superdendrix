@@ -8,6 +8,11 @@ rawdir = "data/raw/"
 featuredir = "data/features/"
 profiledir = "data/profiles/"
 
+rawdir = "data/20Q2/raw/"
+featuredir = "data/20Q2/features/"
+profiledir = "data/20Q2/profiles/"
+
+
 # load oncoKB
 oncokb <- read_delim(paste(rawdir,"oncoKB_list.tsv",sep=""), 
                                    "\t", escape_double = FALSE, trim_ws = TRUE)
@@ -15,12 +20,12 @@ oncogenes <- oncokb[oncokb$type == "oncogene",]$Gene
 tsg <- oncokb[oncokb$type == "tsg",]$Gene
 
 # load CCLE maf
-ccle <- read_delim(paste(rawdir,"depmap_19Q1_mutation_calls_v2.csv",sep=""), 
-                   ",", escape_double = FALSE, trim_ws = TRUE)
+ccle <- read_delim(paste(rawdir,"mutations.csv",sep=""), 
+                   "\t", escape_double = FALSE, trim_ws = TRUE)
 ccle$X1 <- NULL
 
 # load CERES cell lines
-sample_info <- read_csv(paste(rawdir,"cell_line_info.csv",sep=""))
+sample_info <- read_csv(paste(rawdir,"sample_info.csv",sep=""))
 
 # restrict to cell lines with CERES scores
 ccle <- ccle %>% filter(DepMap_ID %in% sample_info$DepMap_ID)
@@ -136,10 +141,10 @@ parse_maf <- function(input_df, outdir, cancertypes,sample_data){
   
   ## optionally add cancer-type features
   if (cancertypes){
-    cancertypes <- sample_data[,c("DepMap_ID","primary_tissue")]
-    colnames(cancertypes) <- c("#Sample","primary_tissue")
+    cancertypes <- sample_data[,c("DepMap_ID","primary_disease")]
+    colnames(cancertypes) <- c("#Sample","primary_disease")
     newdf <- merge(cancertypes,newdf,by="#Sample")
-    newdf$mut <- with(newdf, paste(newdf$primary_tissue,newdf$Events,sep = "\t"))
+    newdf$mut <- with(newdf, paste(newdf$primary_disease,newdf$Events,sep = "\t"))
     newdf <- newdf[,c("#Sample","mut")]
     colnames(newdf) <- c("#Sample","Events")
   }
@@ -153,12 +158,12 @@ features_oncokb_ct <- parse_maf(ccle_oncokb, featuredir, TRUE,sample_info)
 
 feature_list <- features_oncokb_ct %>% mutate(Events=str_split(Events, "\t"))
 feature_list <- feature_list %>% unnest(Events)
-features <- data.frame(Alteration=unique(feature_list$Events)
+features <- data.frame(Alteration=unique(feature_list$Events))
 colnames(features) <- "#alteration"
 
 # write output files
 
-output.file <- file(paste(featuredir,"Q1_CERES_full_MUT.tsv",sep=""), "wb")
+output.file <- file(paste(featuredir,"CERES_full_MUT.tsv",sep=""), "wb")
 write.table(features_full,
             row.names = FALSE,
             col.names = TRUE,
@@ -167,7 +172,7 @@ write.table(features_full,
             quote=FALSE)
 close(output.file)
 
-output.file <- file(paste(featuredir,"Q1_CERES_full_CT.tsv",sep=""), "wb")
+output.file <- file(paste(featuredir,"CERES_full_CT.tsv",sep=""), "wb")
 write.table(features_full_ct,
             row.names = FALSE,
             col.names = TRUE,
@@ -176,7 +181,7 @@ write.table(features_full_ct,
             quote=FALSE)
 close(output.file)
 
-output.file <- file(paste(featuredir,"Q1_CERES_oncoKB_MUT.tsv",sep=""), "wb")
+output.file <- file(paste(featuredir,"CERES_oncoKB_MUT.tsv",sep=""), "wb")
 write.table(features_oncokb,
             row.names = FALSE,
             col.names = TRUE,
@@ -185,7 +190,7 @@ write.table(features_oncokb,
             quote=FALSE)
 close(output.file)
 
-output.file <- file(paste(featuredir,"Q1_CERES_oncoKB_CT.tsv",sep=""), "wb")
+output.file <- file(paste(featuredir,"CERES_oncoKB_CT.tsv",sep=""), "wb")
 write.table(features_oncokb_ct,
             row.names = FALSE,
             col.names = TRUE,
@@ -195,7 +200,7 @@ write.table(features_oncokb_ct,
 close(output.file)
 
 
-output.file <- file(paste(featuredir,"Q1_CERES_oncoKB_feature_list.csv",sep=""), "wb")
+output.file <- file(paste(featuredir,"CERES_oncoKB_feature_list.csv",sep=""), "wb")
 write.table(features,
             row.names = FALSE,
             col.names = TRUE,

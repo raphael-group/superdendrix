@@ -197,7 +197,7 @@ src/multi-superdendrix.py
 src/superdendrix_backup.py
 src/cooccurrence.py
 
-maf_oncoKB_processing.ipynb
+./maf_oncoKB_processing.ipynb
 
 # Ignore experiments
 analysis/

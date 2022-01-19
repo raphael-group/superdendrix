@@ -226,4 +226,3 @@ __pycashe__/
 .snakemake*
 
 # oncokb-annotator
-oncokba-annotator/run_mafannotator.sh

@@ -193,6 +193,11 @@ flycheck_*.el
 ################################################################################
 # Miscellaneous
 ################################################################################
+src/multi-superdendrix.py
+src/superdendrix_backup.py
+src/cooccurrence.py
+
+maf_oncoKB_processing.ipynb
 
 # Ignore experiments
 analysis/
@@ -200,6 +205,13 @@ bashscript/
 EMMIXskew/
 experiments/
 logs/
+data/19Q1/
+data/20Q2/
+data/20Q4/
+data/21Q1/
+data/common/
+data/integrated/
+data/Sanger_19Q1_new/
 
 # Ignore text files
 *.tsv

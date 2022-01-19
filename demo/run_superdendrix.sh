@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# demo for analysis of CERES dataset using SuperDendrix algorithm
+# demo for analysis of 20Q2 DepMap release using SuperDendrix algorithm
 
 # source activate {your-env}  # activate the conda environment with python and r dependencies
 source activate superdendrix-env

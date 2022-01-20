@@ -1,5 +1,8 @@
 # SuperDendrix
 
+![alt text](https://www.dropbox.com/s/fno4102uky1rhj0/fig1.pdf?dl=0)
+
+
 SuperDendrix is an algorithm that uses an integer linear program (ILP) for identifying mutually exclusive sets of genomic features that are correlated with a dependency profile.
 This repository includes instructions for installation and tutorials using example data for SuperDendrix.
 This README is work in progress.
@@ -13,6 +16,10 @@ SuperDendrix consists of three modules:
 
 ### Python and R
 SuperDendrix modules are written in R and Python 3, and has some R and Python module dependencies. We suggest using Anaconda to manage the dependencies. The dependencies are listed in the `environment.yml` file in this repository.
+
+In addition, the following modules need to be installed:
+- EMMIXskew 1.0.3 (R package): https://cran.r-project.org/src/contrib/Archive/EMMIXskew/
+- oncokb-annotator: https://github.com/oncokb/oncokb-annotator
 
 To solve the ILP, SuperDendrix uses the [Gurobi Optimizer](http://www.gurobi.com/downloads/gurobi-optimizer), accessed through the `gurobi` Python module. Gurobi must be installed in order to run SuperDendrix.
 
@@ -29,10 +36,9 @@ SuperDendrix requires the following data:
 
 ### Downloading required data
 
-CERES datasets of project DepMap from the Broad Institute for example analysis can be downloaded using the following command.
+An example dataset for testing SuperDendrix can be downloaded using the following command.
 
     snakemake all
-in the data directory.
 
 ## Commands
 
@@ -67,5 +73,5 @@ Identifying an association between differential dependency and a set of genomic 
     python src/superdendrix.py -t ${THREADS} -T ${PHENOTYPE} -Tc ${GENE} -m ${FEATURES} -gf ${FEATURELIST} -p ${CYCLE} -cp ${CP} -d ${DIRECTION} -k ${SETSIZE} -nm ${NULLMATRICES} -rs ${RANDSEED} -x -curve -o ${OUTPUT_FILE}
 
 ## Demo
-A bashscript for an example analysis of increased dependency on ARID1B profile from the CERES dataset is provided in the demo directory.
+A bashscript for an example analysis of BRAF dependency profile from the 20Q2 release of DepMap dataset is provided in the demo directory.
 

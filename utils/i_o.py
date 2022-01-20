@@ -116,13 +116,8 @@ def load_profiles(profile_file, sample_whitelist=None, verbose=0):
             delim = ","
         arrs = [l.rstrip('\n').split(delim)
                 for l in IN if not l.startswith('#')]
-#        arrs = [l.rstrip('\n').split(',')
-#                for l in IN]
-        print("#####################")
         profile_events = arrs.pop(0)[1:]
         profile_samples = [arr[0] for arr in arrs]
-        #print(profile_samples)
-        #print(profile_events)
         profile_matrix = np.array(
             [[float(a) if (a.lower() != 'na') and (a != '') else np.nan for a in arr[1:]] for arr in arrs])
 

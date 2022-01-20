@@ -27,7 +27,7 @@ __revision__ = ""
 from urllib.parse import quote, urlencode, urlparse
 from scipy.stats import ranksums
 
-import sys, time, argparse, socket, logging
+import sys, time, argparse, socket, logging, os
 from collections import Counter
 from gurobipy import *
 import numpy as np
@@ -66,11 +66,11 @@ def get_parser():
     parser.add_argument('-r', '--reoptimize', default=False, action="store_true", help='Reoptimize for number of genes if k=-1')
     parser.add_argument('-cp', '--cond_it', type=int, default=10000, help='Number of iterations to compute conditional p-value ([-1] = don\'t)')
     parser.add_argument('-p', '--p_val_it', type=int, default=-1, help='Number of iterations to compute empirical p-value ([-1] = don\'t)')
-    parser.add_argument('-curve', '--curveball', default=False, action="store_true", help='use curveball for p-val')
-    parser.add_argument('-perm', '--permute_profile', default=False, action="store_true", help='use profile permutation for p-val')
+    ##parser.add_argument('-curve', '--curveball', default=False, action="store_true", help='use curveball for p-val')
+    ##parser.add_argument('-perm', '--permute_profile', default=False, action="store_true", help='use profile permutation for p-val')
     # scoring function
     parser.add_argument('-d', '--direction', default='increased_dependency', choices=['increased_dependency','decreased_dependency','positive', 'negative'], help='direction: match [positive] or negative values')
-    parser.add_argument('-x', '--mutex', default=False, action="store_true", help='Penalize coverage overlap on the one-part of the target [False]')
+    ##parser.add_argument('-x', '--mutex', default=False, action="store_true", help='Penalize coverage overlap on the one-part of the target [False]')
     parser.add_argument('-u', '--unit_weights', default=False, action="store_true", help='Use unit weights and simple binarization [False]')
     parser.add_argument('-z', '--score_neg_part', default='mutations', choices=['mutations', 'cases'], help='How to score the negative part of the target: [mutations] or mutated cases')
     parser.add_argument('-O', '--offset', type=float, default=0, help='manual weight offset [0]')

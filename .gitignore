@@ -197,6 +197,7 @@ src/multi-superdendrix.py
 src/superdendrix_backup.py
 src/cooccurrence.py
 
+pipeline_21Q1/
 utils/maf_oncoKB_processing.ipynb
 
 # Ignore experiments
@@ -227,3 +228,4 @@ __pycashe__/
 
 # oncokb-annotator
 oncokb-annotator/
+./run_mafannotator.sh

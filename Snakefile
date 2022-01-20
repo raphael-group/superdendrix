@@ -5,7 +5,7 @@ from os.path import join
 ################################################################################
 # Directories
 
-DIR_20Q2 = '20Q2/'
+DIR_20Q2 = 'data/20Q2/'
 
 RAW_DIR = 'raw'
 FEATURES_DIR = 'features'

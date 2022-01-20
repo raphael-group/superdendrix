@@ -36,42 +36,24 @@ SuperDendrix requires the following data:
 
 ### Downloading required data
 
-An example dataset for testing SuperDendrix can be downloaded using the following command.
+We provide an example dataset for testing SuperDendrix which can be downloaded using the following command.
 
     snakemake all
 
 ## Commands
 
-SuperDendrix modules are run using the following commands:
+The following sections describes the three modules of SuperDendrix and provides instructions for testing them on the provided example dataset.
 
 ### Module 1
+Module 1 of SuperDendrix scores dependencies from results of gene perturbation experiments and constructs mutation features (and optionally cancer-type features) using the OncoKB database of reported cancer mutations.
 
-Compute CERES z-scores and identify the six-sigma genes.
-
-`Rscript utils/compute_CERES_zscores.R`
-
-Fitting CERES dataset with mixtures of t-distributions to find differental dependencies.
-
-`Rscript src/fit_tmm.R`
-
-Fitting CERES dataset with mixtures of Gaussian distributions to score differential dependencies.
-
-    python utils/fit_gmm.py -pf ${PHENOTYPE} -o ${OUTPUT_FILE}
-
-Annotating mutations with OncoKB database of cancer mutations.
-
-    Rscript src/oncokb_maf_annotator.R
+We provide a bashscript for running module 1 on the example dataset which can be executed using the following command.
+`bash module_1.sh`
 
 ### Modules 2 and 3
+Module 2 identifies a set of approximately mutually exclusive mutation features (and optionally cancer-type features) that are associated with a differential dependency profile.
 
-Generating randomized feature matrices using the curveball method.
+Module 3 contains two steps: first is a model selection to select the features that contribute significantly to the association identified from the second module. The second step evaluates the statistical significance of the association between the differential dependency and the selected set of features.
 
-    python utils/generate_null_matrices.py -m ${FEATURES} -p ${CYCLE} -o ${OUTPUT_FILE} -pre ${PREFIX} -rs ${RANDSEED}
-
-Identifying an association between differential dependency and a set of genomic features and conducting model selection and evaluation of statistical significance.
-
-    python src/superdendrix.py -t ${THREADS} -T ${PHENOTYPE} -Tc ${GENE} -m ${FEATURES} -gf ${FEATURELIST} -p ${CYCLE} -cp ${CP} -d ${DIRECTION} -k ${SETSIZE} -nm ${NULLMATRICES} -rs ${RANDSEED} -x -curve -o ${OUTPUT_FILE}
-
-## Demo
-A bashscript for an example analysis of BRAF dependency profile from the 20Q2 release of DepMap dataset is provided in the demo directory.
-
+Modules 2 and 3 for the BRAF differential dependency profile from the example dataset can be run in a single bashscript using the following command.
+`bash modules_2_3.sh`

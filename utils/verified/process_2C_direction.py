@@ -9,7 +9,6 @@ parser = argparse.ArgumentParser()
 parser.add_argument('-gmm', '--gmm_summary', type=str, required=True)
 parser.add_argument('-twoc', '--twoc_scores', type=str, required=True)
 parser.add_argument('-raw', '--raw_scores', type=str, required=True)
-
 parser.add_argument('-o', '--output_directory', type=str, required=True)
 
 args = parser.parse_args(sys.argv[1:])

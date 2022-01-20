@@ -1,10 +1,11 @@
 # SuperDendrix
 
-<img src="fig/overview.png" width="600">
+<img src="fig/overview.png" width="800">
 
 SuperDendrix is an algorithm that uses an integer linear program (ILP) for identifying mutually exclusive sets of genomic features that are correlated with a dependency profile.
 This repository includes instructions for installation and tutorials using example data for SuperDendrix.
-This README is work in progress.
+
+*This README is work in progress.*
 
 SuperDendrix consists of three modules:
 1) Scoring differential dependencies and selecting genomic and cell-type features.
@@ -31,7 +32,7 @@ SuperDendrix requires the following data:
 
 1. Quantitative phenotypes (e.g. gene dependency) across samples.
 2. A list of features (e.g. genomic alterations) for each sample.
-3. (Optional) Categorical information (e.g. cell type) of each sample.
+3. Categorical information (e.g. cell type) of each sample.
 
 ### Downloading required data
 
@@ -47,11 +48,11 @@ SuperDendrix modules are run using the following commands:
 
 Compute CERES z-scores and identify the six-sigma genes.
 
-    Rscript utils/compute_CERES_zscores.R
+`Rscript utils/compute_CERES_zscores.R`
 
 Fitting CERES dataset with mixtures of t-distributions to find differental dependencies.
 
-    Rscript src/fit_tmm.R
+`Rscript src/fit_tmm.R`
 
 Fitting CERES dataset with mixtures of Gaussian distributions to score differential dependencies.
 

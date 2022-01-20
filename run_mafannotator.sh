@@ -19,7 +19,6 @@ OMAF="data/raw/CCLE_mutations_avana_oncoKB.tsv"
 ##OMAF="../superdendrix/data/20Q4/features/NFE2L2_mutations_20Q4_oncoKB_38.tsv"
 README="data/example_README.txt"
 
-mkdir -p OMAF
 
 echo "starting"
 #python ../../oncokb-annotator/MafAnnotator.py -i $IMAF -o $OMAF -b $TOKEN -q HGVSp_Short

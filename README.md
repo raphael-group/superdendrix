@@ -1,7 +1,6 @@
 # SuperDendrix
 
-![alt text](https://www.dropbox.com/s/fno4102uky1rhj0/fig1.pdf?dl=0)
-
+<img src="fig/overview.pdf" width="600">
 
 SuperDendrix is an algorithm that uses an integer linear program (ILP) for identifying mutually exclusive sets of genomic features that are correlated with a dependency profile.
 This repository includes instructions for installation and tutorials using example data for SuperDendrix.

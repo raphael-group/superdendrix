@@ -197,22 +197,16 @@ src/multi-superdendrix.py
 src/superdendrix_backup.py
 src/cooccurrence.py
 
-pipeline_21Q1/
-utils/maf_oncoKB_processing.ipynb
 
-# Ignore experiments
+# Ignore experiments and data
 analysis/
 bashscript/
 EMMIXskew/
 experiments/
 logs/
-data/19Q1/
-data/20Q2/
-data/20Q4/
-data/21Q1/
-data/common/
-data/integrated/
-data/Sanger_19Q1_new/
+pipeline_21Q1/
+utils/
+data/
 
 # Ignore text files
 *.tsv

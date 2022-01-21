@@ -5,26 +5,24 @@ from os.path import join
 ################################################################################
 # Directories
 
-DIR_20Q2 = 'data/20Q2/'
+DATA_DIR = 'data/'
 
 RAW_DIR = 'raw'
 FEATURES_DIR = 'features'
-#FEATURES_RM_DIR = 'features/rand_mat'
 PROFILES_DIR = 'profiles'
-RESULTS_DIR = 'results'
 
 
 
 # URLs
-##### 20Q2 ####
-CCLE_MAF_URL = 'https://ndownloader.figshare.com/files/22629110'
-CERES_SCORES_URL = 'https://ndownloader.figshare.com/files/22629068'
-CELL_LINE_INFO_URL = 'https://ndownloader.figshare.com/files/22629137'
+##### Example dataset ####
+CCLE_MAF_URL = 'https://www.dropbox.com/s/bfvvm5iwhr348jy/mutations.tsv?dl=0'
+CELL_LINE_INFO_URL = 'https://www.dropbox.com/s/h56qxjvxlqs6re6/sample_info.tsv?dl=0'
+DEPENDENCY_SCORES_URL = 'https://www.dropbox.com/s/wew164e9zxkvw1f/dependency_scores.csv?dl=0'
 
 # Files
-CCLE_MAF = join(DIR_20Q2+RAW_DIR, 'mutations.csv')
-CERES_SCORES = join(DIR_20Q2+RAW_DIR, 'gene_effect.csv')
-CELL_LINE_INFO = join(DIR_20Q2+RAW_DIR, 'sample_info.csv')
+CCLE_MAF = join(DATA_DIR+RAW_DIR, 'mutations.tsv')
+DEPENDENCY_SCORES = join(DATA_DIR+RAW_DIR, 'dependency_scores.csv')
+CELL_LINE_INFO = join(DATA_DIR+RAW_DIR, 'sample_info.tsv')
 
 ################################################################################
 # COMMANDS
@@ -34,7 +32,7 @@ CELL_LINE_INFO = join(DIR_20Q2+RAW_DIR, 'sample_info.csv')
 rule all:
     input:
         CCLE_MAF,
-        CERES_SCORES,
+        DEPENDENCY_SCORES,
         CELL_LINE_INFO,
 
 #Download
@@ -46,11 +44,11 @@ rule download_ccle_maf:
     shell:
         'wget -O {output} {params.url}'
 
-rule download_ceres_scores:
+rule download_dependency_scores:
     params:
-        url=CERES_SCORES_URL
+        url=DEPENDENCY_SCORES_URL
     output:
-        CERES_SCORES
+        DEPENDENCY_SCORES
     shell:
         'wget -O {output} {params.url}'
 

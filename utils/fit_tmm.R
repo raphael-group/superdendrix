@@ -1,50 +1,32 @@
 # fit with one and two-component mixture of t-distributions
 
-rawdir <- "data/raw/"
-featuredir <- "data/features/"
-profiledir <- "data/profiles/"
-sixsigma_only <- TRUE
-
-rawdir = "data/20Q2/raw/"
-featuredir = "data/20Q2/features/"
-profiledir = "data/20Q2/profiles/"
-
+## Parse input arguments
+args = commandArgs(trailingOnly=TRUE)
+scores_filename = args[1]
+fit_results_filename = args[2]
 
 rand.seed <- 2019
-### load library
+
+## load library
 library(readr)
 library(EMMIXskew)
 library(dplyr)
 
-### load data files
-CERES_scores_sixsigma <- read_delim(paste(profiledir,"CERES_scores_sixsigma.tsv",sep=""), 
+scores <- read_delim(scores_filename, 
                       "\t", escape_double = FALSE, trim_ws = TRUE)
+scores$Sample <- NULL
+genes <- colnames(scores)
+num_genes <- length(genes)
 
+## initialize dataframe
+tmm_summary <- data.frame(gene=character(num_genes), diffBIC = numeric(num_genes), 
+                          mean1 = numeric(num_genes), dof1 = numeric(num_genes), w1 = numeric(num_genes), n1 = numeric(num_genes),
+                          mean2 = numeric(num_genes),dof2 = numeric(num_genes), w2 = numeric(num_genes), n2 = numeric(num_genes), 
+                          k1ll = numeric(num_genes),k2ll = numeric(num_genes),  
+                          k1bic = numeric(num_genes), k2bic = numeric(num_genes), direction = character(num_genes), 
+                          stringsAsFactors = FALSE)
 
-
-CERES_z <- read_delim(paste(profiledir,"CERES_z-scores.tsv",sep=""), 
-                      "\t", escape_double = FALSE, trim_ws = TRUE)
-
-samples <- CERES_z$Sample
-CERES_z$Sample <- NULL
-
-CERES_zscores_sixsigma_summary <- read_delim(paste(profiledir,"CERES_z-scores_sixsigma_summary.tsv",sep=""), 
-                                             "\t", escape_double = FALSE, trim_ws = TRUE)
-
-### select six-sigma genes
-
-if (sixsigma_only){
-  genes <- CERES_zscores_sixsigma_summary[CERES_zscores_sixsigma_summary$sixsigmaTotalcount > 0,]$gene
-}else{
-  genes <- colnames(CERES_z)
-}
-
-
-tmm_summary <- data.frame(gene=character(0), diffBIC = numeric(0), mean1 = numeric(0), dof1 = numeric(0), w1 = numeric(0), n1 = numeric(0),
-                          mean2 = numeric(0),dof2 = numeric(0), w2 = numeric(0),
-                          n2 = numeric(0), k1ll = numeric(0),k2ll = numeric(0),  k1bic = numeric(0), k2bic = numeric(0), direction = character(0), stringsAsFactors = FALSE)
-
-### default initialization parameters
+## default initialization parameters
 initobj1 <- list()
 initobj1$pro <- c(0.5, 0.5)
 initobj1$mu <- c(-1, 1)
@@ -52,12 +34,11 @@ initobj1$sigma <- c(1,1)
 initobj1$dof <- c(100,100)
 initobj1$delta <- c(0,0)
 
-
-### fit with mixture models
-for (i in 1:length(genes)){
+## fit with mixture models
+for (i in 1:num_genes){
   set.seed(rand.seed)
   gene = genes[i]
-  mat <- CERES_z[,gene]
+  mat <- na.omit(scores[[gene]])
 
   k2 <- EmSkew(mat, g=2, init=initobj1, distr="mvt")
   k1 <- EmSkew(mat, g=1, distr="mvt")
@@ -98,19 +79,19 @@ for (i in 1:length(genes)){
   }
   
   if (n1 < n2){
-    direction <- "increased_dependency"
+    direction <- "increased dependency"
   }else {
-    direction <- "decreased_dependency"
+    direction <- "decreased dependency"
   }
   
   currrow <- list(gene,diffBIC, mu1, dof1, w1, n1, mu2, dof2, w2, n2, k1$loglik, k2$loglik, k1$bic, k2$bic, direction)
-  tmm_summary[nrow(tmm_summary) + 1,] = currrow
+  tmm_summary[i,] = currrow
 }
 
 tmm_summary <- tmm_summary %>% arrange(desc(diffBIC))
 
-
-output.file <- file(paste(profiledir,"tmm_summary.tsv",sep=""), "wb")
+# Save results
+output.file <- file(fit_results_filename, "wb")
 write.table(tmm_summary,
             row.names = FALSE,
             col.names = TRUE,
@@ -118,17 +99,3 @@ write.table(tmm_summary,
             sep = "\t",
             quote = FALSE)
 close(output.file)
-
-differential_dependencies <- tmm_summary[tmm_summary$diffBIC>0,]$gene
-CERES_scores_2C <- cbind(Sample = samples, CERES_scores_sixsigma[,differential_dependencies], stringsAsFactors = FALSE)
-
-output.file <- file(paste(profiledir,"CERES_scores_two-comp.tsv",sep=""), "wb")
-write.table(CERES_scores_2C,
-            row.names = FALSE,
-            col.names = TRUE,
-            file = output.file,
-            sep = "\t",
-            quote = FALSE)
-close(output.file)
-
-

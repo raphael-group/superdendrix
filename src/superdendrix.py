@@ -3,10 +3,6 @@
 """
 Supervised Dendrix model for explaining the positive parts of a weighted target profile with mutually exclusive events.
 GW Klau, M Leiserson, B Raphael
-
-Alternative to REVEALER [1].
-
-[1] Kim, Jong Wook, Olga B Botvinnik, Omar Abudayyeh, Chet Birger, Joseph Rosenbluh, Yashaswi Shrestha, Mohamed E Abazeed, et al. 2016. “Characterizing Genomic Alterations in Cancer by Complementary Functional Associations.” Nature Biotechnology 34 (5). Nature Publishing Group: 539–46. doi:10.1038/nbt.3527.
 """
 __author__ = """Gunnar Klau (gunnar.klau@cwi.nl)"""
 __date__ = ""
@@ -17,14 +13,6 @@ __revision__ = ""
 #    All rights reserved.
 #    MIT license.
 
-## thoughts on name:
-## Dendrix = DE Novo DRIver eXclusivity
-## ... = guided/functional/profile/supervised/targeted DRIver eXclusivity
-## hendrix = ... driver exclusivity
-## Tardrix = TARgeted DRIver eXclusivity
-## superdendrix = supervised dendrix
-
-from urllib.parse import quote, urlencode, urlparse
 from scipy.stats import ranksums
 
 import sys, time, argparse, socket, logging, os
@@ -36,13 +24,11 @@ import random
 import statistics
 from collections import defaultdict
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '../utils'))
 from curveball_main import *
 from curveball import *
 from scanutils import *
 
 from i_o import load_mutation_data, getLogger, load_profiles, load_events
-from common import SuperW
 
 # Parse arguments
 def get_parser():
@@ -59,20 +45,14 @@ def get_parser():
     parser.add_argument('-k', '--cardinality', default=-1, type=int, help="Fixed cardinality of event subset [-1]")
     parser.add_argument('-M', '--mutations_only', default=False, action="store_true", help='Consider only mutations (events ending with \'_MUT\')')
     parser.add_argument('-T', '--target', required=True, help='File name for target profile')
-    parser.add_argument('-Tf', '--target_format', default='achilles', choices=['achilles', 'revealer'], help='format of target profile [achilles]')
     parser.add_argument('-Tc', '--target_column', required=False,type=str, help='Name of column to use in target profile')
-    parser.add_argument('-s', '--seed', help='Seed events')
     parser.add_argument('-o', '--output_file', help='Name of output file (csv)')
     parser.add_argument('-r', '--reoptimize', default=False, action="store_true", help='Reoptimize for number of genes if k=-1')
     parser.add_argument('-cp', '--cond_it', type=int, default=10000, help='Number of iterations to compute conditional p-value ([-1] = don\'t)')
-    parser.add_argument('-p', '--p_val_it', type=int, default=-1, help='Number of iterations to compute empirical p-value ([-1] = don\'t)')
-    ##parser.add_argument('-curve', '--curveball', default=False, action="store_true", help='use curveball for p-val')
-    ##parser.add_argument('-perm', '--permute_profile', default=False, action="store_true", help='use profile permutation for p-val')
+    parser.add_argument('-p', '--p_val_it', type=int, default=10000, help='Number of iterations to compute empirical p-value ([-1] = don\'t)')
     # scoring function
     parser.add_argument('-d', '--direction', default='increased_dependency', choices=['increased_dependency','decreased_dependency','positive', 'negative'], help='direction: match [positive] or negative values')
-    ##parser.add_argument('-x', '--mutex', default=False, action="store_true", help='Penalize coverage overlap on the one-part of the target [False]')
     parser.add_argument('-u', '--unit_weights', default=False, action="store_true", help='Use unit weights and simple binarization [False]')
-    parser.add_argument('-z', '--score_neg_part', default='mutations', choices=['mutations', 'cases'], help='How to score the negative part of the target: [mutations] or mutated cases')
     parser.add_argument('-O', '--offset', type=float, default=0, help='manual weight offset [0]')
     # general
     parser.add_argument('-v', '--verbosity', default=logging.INFO, type=int, help='Flag verbose output')
@@ -88,14 +68,10 @@ def run(args):
     logger.info("# calling %s" % " ".join(sys.argv))
     logger.info("# at time %s" % time.strftime("%H:%M:%S on %a, %d %b %Y "))
     logger.info("# on machine %s" % socket.gethostname())
-    
     # 
     global k, N, samples, module
     k = args.cardinality
     mutationMatrix = args.mutation_matrix
-    if args.seed:
-        seed = eval(args.seed)
-    else: seed = []
     
     random.seed(args.random_seed)
     np.random.seed(args.random_seed)
@@ -104,53 +80,36 @@ def run(args):
     w = {} # weights
     global numNanInf
     numNanInf = 0
-    if args.target_format == 'revealer':
-        with open(args.target) as f:
-            arrs = [ l.rstrip().split("\t") for l in f if not l.startswith("#") ]
-            for arr in [arr for arr in arrs]:
-                w[arr[0]] = float(arr[1]) + args.offset
-                if (args.direction == 'negative' or args.direction == 'increased_dependency'):
-                    w[arr[0]] = -w[arr[0]]
-                if args.unit_weights:
-                    if w[arr[0]] <= 0: w[arr[0]] = -1
-                    else: w[arr[0]] = +1
-    elif args.target_format == 'achilles':
-        assert(args.target_column)
-        with open(args.target) as f:
-            line = f.readline()
-            delim = "\t" if args.target.endswith(".tsv") else ","
-            ind = line.rstrip().split(delim).index(args.target_column)# + 1
-            arrs = [ l.rstrip().split(delim) for l in f if not l.startswith("#") ]
-            for arr in arrs:
-                try:
-                    if math.isnan(float(arr[ind])):
-                        logger.info("Warning: profile of sample %s is NaN: removing sample." % arr[0])
-                        numNanInf += 1
-                    elif math.isinf(float(arr[ind])):
-                        w[arr[0]] = 100.0 if float(arr[ind])==float("inf") else -100.0
-                        if (args.direction == 'negative' or args.direction == 'increased_dependency'):
-                            w[arr[0]] = -w[arr[0]]
-                        numNanInf += 1
-                    elif arr[ind] == "":
-                        logger.info("Warning: profile of sample %s is blank: removing sample." % arr[0])
-                        numNanInf += 1
-                    else:
-                        w[arr[0]] = float(arr[ind]) + args.offset
-                        if (args.direction == 'negative' or args.direction == 'increased_dependency'):
-                            w[arr[0]] = -w[arr[0]]
-                        if args.unit_weights:
-                            if w[arr[0]] <= 0: w[arr[0]] = -1
-                            else: w[arr[0]] = +1
-                # except Exception as ex:
-                #     template = "An exception of type {0} occured. Arguments:\n{1!r}"
-                #     message = template.format(type(ex).__name__, ex.args)
-                #     print message
-                except:
-                    logger.warning("Warning: %s %s" % (arr[0], arr[ind]))
+
+    assert(args.target_column)
+    with open(args.target) as f:
+        line = f.readline()
+        delim = "\t" if args.target.endswith(".tsv") else ","
+        ind = line.rstrip().split(delim).index(args.target_column)# + 1
+        arrs = [ l.rstrip().split(delim) for l in f if not l.startswith("#") ]
+        for arr in arrs:
+            try:
+                if math.isnan(float(arr[ind])):
+                    logger.info("Warning: profile of sample %s is NaN: removing sample." % arr[0])
                     numNanInf += 1
-                #     # skip these
-                    # check for patients w/out weights:
-                #print arr[0], w[arr[0]]
+                elif math.isinf(float(arr[ind])):
+                    w[arr[0]] = 100.0 if float(arr[ind])==float("inf") else -100.0
+                    if (args.direction == 'negative' or args.direction == 'increased_dependency'):
+                        w[arr[0]] = -w[arr[0]]
+                    numNanInf += 1
+                elif arr[ind] == "":
+                    logger.info("Warning: profile of sample %s is blank: removing sample." % arr[0])
+                    numNanInf += 1
+                else:
+                    w[arr[0]] = float(arr[ind]) + args.offset
+                    if (args.direction == 'negative' or args.direction == 'increased_dependency'):
+                        w[arr[0]] = -w[arr[0]]
+                    if args.unit_weights:
+                        if w[arr[0]] <= 0: w[arr[0]] = -1
+                        else: w[arr[0]] = +1
+            except:
+                logger.warning("Warning: %s %s" % (arr[0], arr[ind]))
+                numNanInf += 1
     
     # terminate if too many inf or NaN
     if float(numNanInf)/len(arrs) > 0.1:
@@ -163,53 +122,43 @@ def run(args):
             of.write("Nan, Inf fraction: %s" % (float(numNanInf)/len(arrs)))
         return 1
 
-
-    samples1 = w.keys()
-    eventToCases, mutation_samples = load_events(args.mutation_matrix, verbose=1)
-    
+    profile_samples = w.keys()
+    eventToCases, mutation_samples = load_events(args.mutation_matrix, verbose=1)   
     
     # Load the mutation data
-    mutations = load_mutation_data(mutationMatrix, samples1, args.gene_file, args.mutations_only, args.min_freq, args.max_freq)
+    mutations = load_mutation_data(mutationMatrix, profile_samples, args.gene_file, args.mutations_only, args.min_freq, args.max_freq)
     m, N, genes, samples, events_to_samples, samples_to_genes = mutations
 
     coef = 1
     if (args.direction == 'negative' or args.direction == 'increased_dependency'):
         coef = -1
 
-    #global profile
     profile = dict((s, (w[s])) for i, s in enumerate(samples) if s in samples)
-
     
     logger.info('* Mutation data')
     logger.info('\t- Alterations: %s' % m)
     logger.info('\t- Samples: %s' % N)
-    logger.info('* Seed genes: %s' %  ','.join(seed))
-       #
-    # if set(patients) - set(w.keys()):
-    #     nokeys = set(patients) - set(w.keys())
-    #     if verbose & len(nokeys): print "Warning:", len(nokeys), "samples w/out weights" #    : ", nokeys
-    # patients = list(set(patients) & set(w.keys()))
-    
+   
     t_start = time.time()
 
-    z, module, best_single, cov, act_cov, act_sample,x,y,mo = optimize_model(genes, samples, profile, events_to_samples, samples_to_genes, args, seed, logger)
+    z, module, best_single, cov, act_cov, act_sample,x,y,mo = optimize_model(genes, samples, profile, events_to_samples, samples_to_genes, args, logger)
     t_opt = str(time.time() - t_start)
 
     # pruning module
     t_pruning = time.time()
-    logger.info("initially, len module: " + str(len(module)))
-    logger.info("initially, module: " + str(module))
+    logger.info("Before model selection, module: " + str(module))
+
     if args.cond_it != -1:
         while len(module) > 1:
-            logger.info("len module" + str(len(module)))
+            logger.info("Number of features in module:" + str(len(module)))
             worst_event, worst_count = conditional_permutation_test(module, events_to_samples, profile, samples, args.cond_it)
             #if args.verbosity: print('worst',worst_event, worst_count/float(args.cond_it))
-            logger.info('worst= ' + str(worst_event) + str(worst_count/float(args.cond_it)))
+            logger.info('Least significant feature: ' + str(worst_event) + str(worst_count/float(args.cond_it)))
             if worst_count/float(args.cond_it) <= (1.0/float(args.cond_it)): break
             module.remove(worst_event)
     
-    logger.info('time for pruning(sec) = ' + str((time.time() - t_pruning)))
-    logger.info('module after pruning = ' + str(module))
+    logger.info('time for model selection(sec): ' + str((time.time() - t_pruning)))
+    logger.info('module after module selection: ' + str(module))
 
     cases_by_event = [events_to_samples[event] for event in module]
     zP = SuperW(cases_by_event, profile, samples)
@@ -217,21 +166,13 @@ def run(args):
     # init for permutation tests
     p_z_arr_curve = []
     p_z_arr_profile = []
-    avg_p_z_curve = "na"
-    sd_p_z_curve = "na"
-    avg_p_z_profile = "na"
-    sd_p_z_profile = "na"
     p_val_str_curve = "na"
-    p_val_str_curve_2 = "na"
-    p_val_str_profile = "na"
-    p_val_str_profile_2 = "na"
-
+    #p_val_str_curve_2 = "na"
     
     # matrix permutation using curveball method
     k = len(module)
     t_s1 = time.time()
-    if args.curveball and len(module) > 0 and args.p_val_it > 0:
-        print("curveball")
+    if len(module) > 0 and args.p_val_it > 0:
         nullmat_dir = args.null_matrices
         c = 0
         t_curve_arr = []
@@ -242,79 +183,23 @@ def run(args):
         for i in range(args.p_val_it):
             t_s = time.time()
             
-            p_mutations = load_mutation_data(nullmat_dir+str(i)+".tsv", samples1, args.gene_file, args.mutations_only, args.min_freq, args.max_freq)
+            p_mutations = load_mutation_data(nullmat_dir+str(i)+".tsv", profile_samples, args.gene_file, args.mutations_only, args.min_freq, args.max_freq)
             p_m, p_N, p_genes, p_samples, p_events_to_samples, p_samples_to_genes = p_mutations
             t_curve = time.time() - t_s
 
             t_s = time.time()
-            p_z, p_module, p_best_single, p_cov, p_act_cov, p_act_sample,p_x,p_y,p_mo = optimize_model(p_genes, p_samples, w, p_events_to_samples, p_samples_to_genes, args, seed, logger) #change args.k
+            p_z, p_module, p_best_single, p_cov, p_act_cov, p_act_sample,p_x,p_y,p_mo = optimize_model(p_genes, p_samples, w, p_events_to_samples, p_samples_to_genes, args, logger) #change args.k
             if p_z >= zP: no_better = no_better + 1
             if p_z <= zP: no_worse = no_worse + 1
             p_z_arr_curve.append(p_z)
-
-            c += 1
-            t_opt2 = time.time() - t_s
-
-            if c == 500:
-                print("500cycle:",str((time.time() - t_s1)/60),"min")
         p_val_str_curve = str(float(no_better)/args.p_val_it)
-        p_val_str_curve_2 = str(float(no_worse)/args.p_val_it)
-        print("all cycles:",str((time.time() - t_s1)/60),"min")
-
-        if args.p_val_it > 0:
-            avg_p_z_curve = str(float(sum(p_z_arr_curve))/len(p_z_arr_curve))
-            sd_p_z_curve = str(statistics.stdev(p_z_arr_curve))
-        else:
-            avg_p_z_curve = "NA"
-            sd_p_z_curve = "NA"
-    # compute p-value (profile permutation)
-    if args.permute_profile and len(module) > 0:
-        print('no curveball')
-        l = len(seed)
-        mo.remove(mo.getConstrs()[l])
-        mo.addConstr(quicksum(x[g] for g in genes) <= len(module))
-        p_val_str_profile = "n/a"
-        p_val_single_str = "n/a"
-        z_single = float("-inf")
-        if args.p_val_it != -1:
-            no_better, no_better_single = 0, 0
-            no_worse = 0
-            values = list(profile.values())
-            iter_count = 0  #counter to check time
-            t_p = time.time() #for time
-            for i in range(args.p_val_it):
-                random.shuffle(values)
-                w2 = dict(zip(profile.keys(), values))
-                # adapt weights in objective function
-                mo.setObjective(build_obj(x, y, w2, samples_to_genes, args), GRB.MAXIMIZE)
-                mo.update()
-                mo.optimize()
-                if mo.ObjVal >= zP: no_better = no_better + 1
-                if mo.ObjVal <= zP: no_worse = no_worse + 1
-                p_z_arr_profile.append(mo.ObjVal)
-                # p-value for single event:
-                ##z_single_s = float("-inf")
-                ##for e in genes:
-                    ##z_e = sum(w2[s] for s in events_to_samples[e])
-                    ##if z_e > z_single_s: z_single_s = z_e
-                ##if z_single_s >= z_single: no_better_single = no_better_single + 1
-                iter_count += 1
-                if (iter_count == 50):
-                    logger.info('now at 50, time taken(min.)= ' + str((time.time() - t_p)/60))
-                    logger.info('expected time(hours) = ' + str((float(args.p_val_it)/50)*((time.time()-t_p)/3600)))
-                if (iter_count % 1000) == 0:
-                    logger.info('iter count ' + str(iter_count) + ' time taken(min.) =   ' +  str((time.time() - t_p)/60))
-            p_val_str_profile = str(no_better/float(args.p_val_it))
-            p_val_str_profile_2 = str(no_worse/float(args.p_val_it))
-            avg_p_z_profile = str(float(sum(p_z_arr_profile))/len(p_z_arr_profile))
-            sd_p_z_profile = str(statistics.stdev(p_z_arr_profile))
-
+        #p_val_str_curve_2 = str(float(no_worse)/args.p_val_it)
+        print("Time for permutation test:",str((time.time() - t_s1)/60),"min")
 
     logger.info('coverage: %d/%d' % (cov, N))
     if cov > 0: obj_norm = z/cov
     else: obj_norm = 0
     module.sort(key=lambda g: len(events_to_samples[g]), reverse=True)
-    if args.target_format == 'revealer': args.target_column = ""
     max_score = sum(profile[p] for p in samples if profile[p] > 0)
     if max_score == 0:
         max_score = -0.1
@@ -331,7 +216,6 @@ def run(args):
     scores_dict = dict()
     print("-------------------------")
     print(module)
-#    print(profile)
     for i in range(len(module)):
         sampleset = [events_to_samples[module[i]]]
         scores_ind.append(float(round(SuperW(sampleset,profile,samples),2)))
@@ -351,34 +235,12 @@ def run(args):
     for i in range(len(module)):
         cover = cover.union(events_to_samples[module[i]])
     
-    logger.info(args.target_column + "\t" + str(z) + "\t" + str(max_score)  + "\t" + str(z/(max_score+0.0001)) + "\t" + str(cov) + "\t" + str(len(samples)) + "\t" + str(act_cov) + "\t" + str(act_sample) + "\t" + str(obj_norm) + "\t" + str(t_model) + "\t" + str(module) + "\t" + str(len(module)) + "\t" + str(best_single))
+    #logger.info(args.target_column + "\t" + str(z) + "\t" + str(max_score)  + "\t" + str(z/(max_score+0.0001)) + "\t" + str(cov) + "\t" + str(len(samples)) + "\t" + str(act_cov) + "\t" + str(act_sample) + "\t" + str(obj_norm) + "\t" + str(t_model) + "\t" + str(module) + "\t" + str(len(module)) + "\t" + str(best_single))
     
-    logger.info(", ".join(module))
-
-    ##urlencode
-    dataset = "Project Achilles" if args.target_format=='achilles' else "Project Revealer"
-    query_input = [('dataset', dataset), ('profile', args.target_column), ('sample_lists', 'CERES'), ('events'," ".join(module).replace("_MUT",""))]
-    queries = urlencode(query_input,quote_via=quote)
-    url = "https://superdendrix-data-explorer.lrgr.io/#"
-
-    ##Wilcoxon rank sum test
-    if len(module) == 0:
-        ranksum_pval = 1
-    else:
-        mutsamples = set()
-        for i in range(len(module)):
-            mutsamples = mutsamples.union(events_to_samples[module[i]])
-        nomutsamples = set(samples) - mutsamples
-
-        mutscores = [profile[s] for s in mutsamples]
-        nomutscores = [profile[s] for s in nomutsamples]
-
-        ranksum_pval = ranksums(mutscores, nomutscores)[1]
-
     ##output
     if args.output_file:
         of = open(args.output_file, 'w')
-        of.write("profile\tfeatures\t#sample\tscores\tW(M)/max_score(%)\tcoverage\tranksum_pval\tbrowser_link\tt_opt\tt_total\tP_value\tdirection\tfeature_count\n")
+        of.write("profile\tfeatures\t#samples\tscores\tW(M)(%)\tcoverage\tP_value\tdirection\tfeature_count\n")
         of.write(str(args.target_column) + "\t")
         if len(module) > 0:
             of.write(",".join(module))
@@ -388,21 +250,21 @@ def run(args):
             of.write("nan")
             of.write("\t" + "nan")
             of.write('\t' + "nan")
-        of.write("\t" + str(round(100*zP/max_score,4)) + "\t" + str(len(cover))+"/"+str(N))
-        of.write("\t" + str(ranksum_pval) + "\t" + url + queries)
-        of.write("\t" + t_opt)
-        of.write("\t" + str(time.time() - t_init))
+        of.write("\t" + str(round(100*zP/max_score,4)))
+        of.write("\t" + str(len(cover))+"/"+str(N))
         of.write("\t" + str(p_val_str_curve))
         of.write("\t" + str(args.direction))
-        of.write("\t" + str(len(module)))
+        of.write("\t" + str(len(module))+"\n")
     
+    logger.info("Profile: " + args.target_column)
+    logger.info("FINAL MODULE: " + ", ".join(module))
     for g in module:
         logger.info('%s %s' % (g, len(events_to_samples[g])))
 
     return module
 
 
-def optimize_model(genes, samples, w, events_to_samples, samples_to_genes, args, seed, logger=getLogger()):
+def optimize_model(genes, samples, w, events_to_samples, samples_to_genes, args, logger=getLogger()):
     """Builds and optimizes the model using Gurobi.
       * **bound** (*bool*) - use a bound (opt value has to be better than that bound)
       * **z_bound** (*float*) - bound to use in that case
@@ -433,15 +295,12 @@ def optimize_model(genes, samples, w, events_to_samples, samples_to_genes, args,
         for p in samples: y[p] = m.addVar(vtype=GRB.BINARY, name = 'y_%s' % p)
         m.update()
 
-        # #print 'obj:', obj
         #obj = quicksum(y[p] for p in one_samples) - quicksum(y[p] for p in zero_samples)
         #if k != -1:
         m.setObjective(build_obj(x, y, w, samples_to_genes, args), GRB.MAXIMIZE)
         #else:
         #    m.setObjective(obj - quicksum(x[g] for g in genes)/len(genes), GRB.MAXIMIZE)
         # set the bound constraint if appropriate
-        # set the seed genes
-        for g in seed: m.addConstr(x[g] == 1)
 
         # cardinality constraint
         if k != -1: m.addConstr(quicksum(x[g] for g in genes) <= k)
@@ -498,13 +357,6 @@ def optimize_model(genes, samples, w, events_to_samples, samples_to_genes, args,
     return z, module, e_single, cov, act_cov, act_sample,x,y,m##, p_val_str, p_val_single_str
 
 
-# SuperDendrix weight function
-#def SuperW(cases_by_event, profile, samples):
-#        mut_samples = set(s for cases in cases_by_event for s in cases)
-#        pos = sum(profile[s] for s in mut_samples if profile[s] > 0)
-#        neg = sum(abs(profile[s]) for cases in cases_by_event for s in cases)
-#        return 2 * pos - neg
-
 # Conditional permutation test
 def conditional_permutation_test(module, eventToCases, profile, samples, num_permutations):
         # Compute the score for current module
@@ -531,21 +383,22 @@ def conditional_permutation_test(module, eventToCases, profile, samples, num_per
 
         return worst_event, worst_count
 
+# SuperDendrix weight function
+def SuperW(cases_by_event, profile, samples):
+        mut_samples = set(s for cases in cases_by_event for s in cases)
+        pos = sum(profile[s] for s in mut_samples if profile[s] > 0)
+        neg = sum(abs(profile[s]) for cases in cases_by_event for s in cases)
+        return 2 * pos - neg
 
 def build_obj(x, y, w, samples_to_genes, args):
     pos_samples = [p for p in samples if w[p] > 0]
     obj_cover_target = quicksum(y[p] * w[p] for p in pos_samples)
     obj_mutex_target = quicksum(quicksum(x[g] * w[p] for g in samples_to_genes[p]) for p in pos_samples) - quicksum(y[p] * w[p] for p in pos_samples)
-    obj_neg_cases  = quicksum(y[p] * w[p] for p in set(samples) - set(pos_samples))
     obj_neg_muts = quicksum(quicksum(x[g] * -w[p] for g in samples_to_genes[p]) for p in set(samples) - set(pos_samples))
     obj = obj_cover_target
-    if args.mutex: obj -= obj_mutex_target
-    if args.score_neg_part == 'mutations': obj -= obj_neg_muts
-    elif args.score_neg_part == 'cases': obj += obj_neg_cases
+    obj -= obj_mutex_target
+    obj -= obj_neg_muts
     return obj
-
-
-
 
 if __name__ == "__main__":
     run(get_parser().parse_args(sys.argv[1:]))

@@ -1,7 +1,7 @@
 # merge inactivating and other mutations for a gene that co-occur in a cell line
 # we keep inactivating and remove other if they co-occur
 
-import copy, sys, argparse
+import copy, sys, argparse, os
 from i_o import load_mutation_data
 
 # Parse arguments
@@ -15,7 +15,7 @@ input_features = args.input
 output_file = args.output
 
 
-m, n, genes, patients, mutToSamples, sampleToMut = load_mutation_data(f)
+m, n, genes, patients, mutToSamples, sampleToMut = load_mutation_data(input_features)
 
 new_sampleToMut = copy.deepcopy(sampleToMut)
 for s in new_sampleToMut.keys():

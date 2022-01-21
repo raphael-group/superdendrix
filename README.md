@@ -58,3 +58,13 @@ Module 3 contains two steps: first is a model selection to select the features t
 Modules 2 and 3 for the BRAF differential dependency profile from the example dataset can be run in a single bashscript using the following command.
 
     bash modules_2_3.sh
+
+## Contacts
+SuperDendrix repository is maintained by Tyler Park, a current member of the research group of prof. Ben Raphael at Princeton University.
+For any related question, please email Tyler Park (typark@princeton.edu).
+
+### License
+See `LICENSE` for license information.
+
+### Citation
+The SuperDendrix manuscript will be available soon.

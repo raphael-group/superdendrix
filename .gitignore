@@ -197,6 +197,8 @@ src/multi-superdendrix.py
 src/superdendrix_backup.py
 src/cooccurrence.py
 
+pipeline_21Q1/
+pipeline_20Q2/
 
 # Ignore experiments and data
 analysis/
@@ -204,7 +206,6 @@ bashscript/
 EMMIXskew/
 experiments/
 logs/
-pipeline_21Q1/
 utils/
 data/
 

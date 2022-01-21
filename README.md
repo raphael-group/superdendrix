@@ -17,8 +17,7 @@ SuperDendrix consists of three modules:
 ### Python and R
 SuperDendrix modules are written in R and Python 3, and has some R and Python module dependencies. We suggest using Anaconda to manage the dependencies. The dependencies are listed in the `environment.yml` file in this repository.
 
-In addition, the following modules need to be installed:
-- EMMIXskew 1.0.3 (R package): https://cran.r-project.org/src/contrib/Archive/EMMIXskew/
+In addition, code from the following repo needs to be downloaded under `superdendrix/` directory.
 - oncokb-annotator: https://github.com/oncokb/oncokb-annotator
 
 To solve the ILP, SuperDendrix uses the [Gurobi Optimizer](http://www.gurobi.com/downloads/gurobi-optimizer), accessed through the `gurobi` Python module. Gurobi must be installed in order to run SuperDendrix.

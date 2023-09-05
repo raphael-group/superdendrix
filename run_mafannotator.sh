@@ -2,7 +2,7 @@
 
 #cd /n/fs/ragr-research/projects/sd/gitrepo/oncokb-annotator
 
-TOKEN="12cd9caf-9fb8-4098-80fd-9de027fe6b9a" #OncoKB API Token
+TOKEN="" #OncoKB API Token
 
 #IMAF="../superdendrix/data/20Q4/raw/CCLE_mutations.csv"
 #OMAF="../superdendrix/data/20Q4/features/CCLE_mutations_20Q4_oncoKB.tsv"
